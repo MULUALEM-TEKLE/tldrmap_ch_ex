@@ -13,7 +13,7 @@ const sampleMarkdown = `# My Chrome Extension
   - Click on extension icon
   - View summary in mind map format`
 
-let apiKey_ = ""
+let apiKey_
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.action === "updateMap") {
@@ -48,8 +48,8 @@ const options = {
 	paddingY: 5,
 }
 
-/* const { markmap } = window
-const { Toolbar } = markmap */
+/* const { markmap } = window;
+const { Toolbar } = markmap; */
 
 function renderMindmap(markdown) {
 	return new Promise((resolve) => {
@@ -81,6 +81,48 @@ function renderMindmap(markdown) {
 	})
 }
 
+function enableButtons(apiKey) {
+	const generateButton = document.getElementById("generateButton")
+	const downloadButton = document.getElementById("downloadButton")
+	const clearApiKeyButton = document.getElementById("clearApiKey")
+	const saveApiKeyButton = document.getElementById("saveApiKey")
+	const cancelApiKeyButton = document.getElementById("cancelApiKey")
+
+	if (apiKey) {
+		generateButton.disabled = false
+		downloadButton.disabled = false
+		clearApiKeyButton.disabled = false
+		generateButton.style.backgroundColor = "white"
+		downloadButton.style.backgroundColor = "white"
+		clearApiKeyButton.style.backgroundColor = "white"
+		generateButton.style.color = "black"
+		downloadButton.style.color = "black"
+		clearApiKeyButton.style.color = "black"
+		saveApiKeyButton.disabled = false
+		saveApiKeyButton.style.backgroundColor = "white"
+		saveApiKeyButton.style.color = "black"
+		cancelApiKeyButton.disabled = false
+		cancelApiKeyButton.style.backgroundColor = "white"
+		cancelApiKeyButton.style.color = "black"
+	} else {
+		generateButton.disabled = true
+		downloadButton.disabled = true
+		clearApiKeyButton.disabled = true
+		generateButton.style.backgroundColor = "lightgrey"
+		downloadButton.style.backgroundColor = "lightgrey"
+		clearApiKeyButton.style.backgroundColor = "lightgrey"
+		generateButton.style.color = "grey"
+		downloadButton.style.color = "grey"
+		clearApiKeyButton.style.color = "grey"
+		saveApiKeyButton.disabled = false
+		saveApiKeyButton.style.backgroundColor = "white"
+		saveApiKeyButton.style.color = "black"
+		cancelApiKeyButton.disabled = true
+		cancelApiKeyButton.style.backgroundColor = "lightgrey"
+		cancelApiKeyButton.style.color = "grey"
+	}
+}
+
 // Request summary if available immediately on popup open
 document.addEventListener("DOMContentLoaded", () => {
 	chrome.runtime.sendMessage({ action: "getApiKey" }, (response) => {
@@ -95,27 +137,32 @@ document.addEventListener("DOMContentLoaded", () => {
 	renderMindmap(sampleMarkdown)
 		.then(() => {
 			hideLoading()
+			console.log("apiKey_:", apiKey_)(apiKey_ && apiKey_ !== "")
+				? (document.getElementById("apiKeyInputDialog").value = apiKey_)
+				: (document.getElementById("apiKeyInputDialog").value = "")
 		})
 		.catch((error) => {
 			console.error("Error rendering sample mindmap:", error)
 			hideLoading() // Hide loading if there's an error
 		}) // Use sample if no summary available
 
-	document.getElementById("apiKeyInput").addEventListener("change", () => {
-		const apiKey = document.getElementById("apiKeyInput").value
-		chrome.runtime.sendMessage(
-			{ action: "setApiKey", apiKey: apiKey },
-			(response) => {
-				if (response.success) {
-					showSuccessToast("API Key updated successfully!")
-					updateApiKeyStatus(apiKey)
-					enableButtons(apiKey)
-				} else {
-					showErrorToast("Failed to update API Key.")
+	document
+		.getElementById("apiKeyInputDialog")
+		.addEventListener("change", () => {
+			const apiKey = document.getElementById("apiKeyInputDialog").value
+			chrome.runtime.sendMessage(
+				{ action: "setApiKey", apiKey: apiKey },
+				(response) => {
+					if (response.success) {
+						showSuccessToast("API Key updated successfully!")
+						updateApiKeyStatus(apiKey)
+						enableButtons(apiKey)
+					} else {
+						showErrorToast("Failed to update API Key.")
+					}
 				}
-			}
-		)
-	})
+			)
+		})
 	const settingsButton = document.getElementById("settingsButton")
 	if (settingsButton) {
 		settingsButton.addEventListener("click", openApiKeyDialog)
@@ -213,9 +260,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	})
 	document.getElementById("clearApiKey").addEventListener("click", () => {
 		chrome.runtime.sendMessage({ action: "clearApiKey" }, (response) => {
-			if (response.success) {
+			if (response && response.success) {
 				showSuccessToast("API Key cleared successfully!")
 				updateApiKeyStatus("")
+				document.getElementById("apiKeyInputDialog").value = ""
+				apiKey_ = undefined
+				closeApiKeyDialog()
+				enableButtons(null)
 			} else {
 				showErrorToast("Failed to clear API Key.")
 			}
@@ -264,11 +315,13 @@ function hideLoading() {
 function openApiKeyDialog() {
 	document.getElementById("apiKeyDialog").style.display = "block"
 	document.getElementById("apiKeyInputDialog").focus()
+	console.log("api key is " + apiKey_)
 	enableButtons(apiKey_)
 }
 
 function closeApiKeyDialog() {
 	document.getElementById("apiKeyDialog").style.display = "none"
+	console.log("api key is " + apiKey_)
 	enableButtons(apiKey_)
 }
 
@@ -294,51 +347,9 @@ function showErrorToast(message) {
 
 function updateApiKeyStatus(apiKey) {
 	const apiKeyStatus = document.getElementById("apiKeyStatus")
-	if (apiKey) {
+	if (apiKey && apiKey !== "") {
 		apiKeyStatus.textContent = "API Key set."
 	} else {
 		apiKeyStatus.textContent = "API Key needed."
-	}
-}
-
-function enableButtons(apiKey) {
-	const generateButton = document.getElementById("generateButton")
-	const downloadButton = document.getElementById("downloadButton")
-	const clearApiKeyButton = document.getElementById("clearApiKey")
-	const saveApiKeyButton = document.getElementById("saveApiKey")
-	const cancelApiKeyButton = document.getElementById("cancelApiKey")
-
-	if (apiKey) {
-		generateButton.disabled = false
-		downloadButton.disabled = false
-		clearApiKeyButton.disabled = false
-		generateButton.style.backgroundColor = "white"
-		downloadButton.style.backgroundColor = "white"
-		clearApiKeyButton.style.backgroundColor = "white"
-		generateButton.style.color = "black"
-		downloadButton.style.color = "black"
-		clearApiKeyButton.style.color = "black"
-		saveApiKeyButton.disabled = false
-		saveApiKeyButton.style.backgroundColor = "white"
-		saveApiKeyButton.style.color = "black"
-		cancelApiKeyButton.disabled = false
-		cancelApiKeyButton.style.backgroundColor = "white"
-		cancelApiKeyButton.style.color = "black"
-	} else {
-		generateButton.disabled = true
-		downloadButton.disabled = true
-		clearApiKeyButton.disabled = true
-		generateButton.style.backgroundColor = "lightgrey"
-		downloadButton.style.backgroundColor = "lightgrey"
-		clearApiKeyButton.style.backgroundColor = "lightgrey"
-		generateButton.style.color = "grey"
-		downloadButton.style.color = "grey"
-		clearApiKeyButton.style.color = "grey"
-		saveApiKeyButton.disabled = false
-		saveApiKeyButton.style.backgroundColor = "white"
-		saveApiKeyButton.style.color = "black"
-		cancelApiKeyButton.disabled = true
-		cancelApiKeyButton.style.backgroundColor = "lightgrey"
-		cancelApiKeyButton.style.color = "grey"
 	}
 }

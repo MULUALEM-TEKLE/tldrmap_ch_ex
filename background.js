@@ -17,6 +17,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		sendResponse({ apiKey: apiKey_ })
 	} else if (request.action === "getText") {
 		// Existing message handling code...
+	} else if (request.action === "clearApiKey") {
+		chrome.storage.sync.remove(["apiKey"], () => {
+			apiKey_ = undefined
+			console.log("API Key cleared from storage")
+			sendResponse({ success: true })
+		})
+		return true // Indicate asynchronous response
 	}
 })
 
