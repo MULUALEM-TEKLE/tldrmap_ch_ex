@@ -54,24 +54,6 @@
 
 			#loadingIndicator {
 				color: rebeccapurple;
-				position: fixed;
-				top: 0;
-				left: 0;
-				z-index: 1000;
-				background-color: black;
-				font-size: 3rem;
-				height: 100%;
-				width: 100%;
-				display: flex;
-				justify-content: center;
-				align-items: center;
-			}
-
-			#loadingIndicator div {
-				position: absolute;
-				top: 50%;
-				left: 50%;
-				transform: translate(-50%, -50%);
 			}
 
 			#downloadButton {
@@ -188,14 +170,15 @@
 				color: white;
 				border: 1px solid white;
 			}
+			.dark-mode #loadingIndicator {
+				background-color: #333;
+				color: white;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="mindmap"></div>
 
-		<div id="loadingIndicator" style="display: none">
-			<div>Loading...</div>
-		</div>
 		<div id="apiKeyDialog" style="display: none">
 			<input
 				type="password"

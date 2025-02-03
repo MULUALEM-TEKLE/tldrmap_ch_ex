@@ -1,3 +1,1 @@
-# Active Context: Settings Dialog Implementation
-
-Implemented a settings dialog for API key management. The dialog is opened via a new "Settings" button in the popup. The `popup.js` script now handles the dialog and communication with the background script to update the API key. The next step is to thoroughly test the updated functionality.
+Refactored `popup.js` and `popup.html` to use toasts instead of a full-screen loading indicator. The loading indicator styles have been removed from `popup.html`, and `popup.js` now uses the existing toast functionality to display messages for mapping progress and errors. The `showLoading()` and `hideLoading()` functions have been replaced with `showMappingToast()`, `showMapGeneratedToast()`, and `showTryAgainToast()`. These functions use a helper function `showCustomToast()` to display toasts with custom background colors. All changes are complete.

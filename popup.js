@@ -17,14 +17,14 @@ let apiKey_
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.action === "updateMap") {
-		showLoading()
+		showMappingToast()
 		renderMindmap(request.data || sampleMarkdown)
 			.then(() => {
-				hideLoading()
+				showMapGeneratedToast()
 			})
 			.catch((error) => {
 				console.error("Error rendering mindmap:", error)
-				hideLoading() // Hide loading if there's an error
+				showTryAgainToast()
 			})
 	} else if (request.action === "showSuccessToast") {
 		showSuccessToast(request.message)
@@ -132,18 +132,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		enableButtons(apiKey_)
 	})
 
-	showLoading()
-
 	renderMindmap(sampleMarkdown)
 		.then(() => {
-			hideLoading()
-			console.log("apiKey_:", apiKey_)(apiKey_ && apiKey_ !== "")
-				? (document.getElementById("apiKeyInputDialog").value = apiKey_)
-				: (document.getElementById("apiKeyInputDialog").value = "")
+			// hideLoading()
+			console.log("apiKey_:", apiKey_)
+			if (!apiKey_ || apiKey_ === "") {
+				openApiKeyDialog()
+			} else {
+				document.getElementById("apiKeyInputDialog").value = apiKey_
+			}
 		})
 		.catch((error) => {
 			console.error("Error rendering sample mindmap:", error)
-			hideLoading() // Hide loading if there's an error
+			// hideLoading() // Hide loading if there's an error
 		}) // Use sample if no summary available
 
 	document
@@ -181,6 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	document
 		.getElementById("generateButton")
 		.addEventListener("click", function () {
+			showMappingToast()
 			chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 				chrome.scripting.executeScript(
 					{
@@ -194,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
 							console.error(chrome.runtime.lastError)
 							return
 						}
-						showLoading()
+						// showLoading()
 						chrome.runtime.sendMessage({
 							action: "getText",
 							data: results[0].result,
@@ -231,6 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				document.body.appendChild(link)
 				link.click()
 				document.body.removeChild(link)
+				showImageDownloadedToast()
 			} catch (error) {
 				console.error("Error while creating screenshot:", error)
 				alert(
@@ -304,12 +307,30 @@ function setupToolbar(el, container) {
 	console.log("added toolbar")
 }
 
-function showLoading() {
-	document.getElementById("loadingIndicator").style.display = "block"
+function showMappingToast() {
+	showCustomToast("Started to generate map", "#777700")
 }
 
-function hideLoading() {
-	document.getElementById("loadingIndicator").style.display = "none"
+function showMapGeneratedToast() {
+	showCustomToast("Map Generated", "#00dd00")
+}
+
+function showImageDownloadedToast() {
+	showCustomToast("Image Downloaded", "#00dd00")
+}
+
+function showTryAgainToast() {
+	showCustomToast("Try again", "#dd0000")
+}
+
+function showCustomToast(message, backgroundColor) {
+	const toast = document.getElementById("toast")
+	toast.textContent = message
+	toast.style.backgroundColor = backgroundColor
+	toast.style.display = "block"
+	setTimeout(() => {
+		toast.style.display = "none"
+	}, 3000)
 }
 
 function openApiKeyDialog() {
