@@ -1,25 +1,3 @@
-<!-- <!DOCTYPE html>
-<html>
-	<head>
-		<script src="popup.js"></script>
-	</head>
-	<body>
-		<div id="mindmap"></div>
-	</body>
-</html>
- -->
-
-<!-- <!DOCTYPE html>
-<html>
-	<head>
-		<script src="popup.js"></script>
-	</head>
-	<body>
-		<div id="mindmap"></div>
-	</body>
-</html>
- -->
-
 <!DOCTYPE html>
 <html>
 	<head>
@@ -51,13 +29,27 @@
 				width: 100%;
 			}
 
-			#generateButton {
+			#generateButton,
+			#downloadButton {
 				color: black;
-				padding: 10px;
 				background-color: white;
-				border: none;
+				border: 2px solid #333;
 				border-radius: 5px;
 				cursor: pointer;
+			}
+
+			#generateButton:disabled,
+			#downloadButton:disabled,
+			#apiKeyDialog button:disabled {
+				background-color: lightgrey;
+				cursor: not-allowed;
+				color: grey;
+			}
+
+			#generateButton:disabled:hover,
+			#downloadButton:disabled:hover,
+			#apiKeyDialog button:disabled:hover {
+				cursor: not-allowed;
 			}
 
 			#loadingIndicator {
@@ -65,13 +57,11 @@
 				position: fixed;
 				top: 0;
 				left: 0;
-
 				z-index: 1000;
 				background-color: black;
 				font-size: 3rem;
 				height: 100%;
 				width: 100%;
-
 				display: flex;
 				justify-content: center;
 				align-items: center;
@@ -85,13 +75,10 @@
 			}
 
 			#downloadButton {
-				position: absolute;
-				bottom: 60px;
-				left: 10px;
 				padding: 10px;
 				background-color: white;
 				color: green;
-				border: none;
+				border: 2px solid #333;
 				border-radius: 5px;
 				cursor: pointer;
 			}
@@ -101,16 +88,156 @@
 				top: 1%;
 				left: 1%;
 			}
+			#modeButton {
+				position: absolute;
+				top: 0.5rem;
+				right: 0.5rem;
+				padding: 0.5rem 1rem;
+				border-radius: 0.5rem;
+				border: none;
+				cursor: pointer;
+			}
+			.dark-mode #modeButton {
+				background-color: #333;
+				color: white;
+			}
+			.dark-mode #generateButton {
+				background-color: #333;
+				color: white;
+				border: 2px solid white;
+			}
+			.dark-mode #downloadButton {
+				background-color: #333;
+				color: greenyellow;
+				border: 2px solid white;
+			}
+			.dark-mode {
+				background-color: black;
+				color: white;
+			}
+			.dark-mode * {
+				color: white;
+			}
+
+			.buttons-container {
+				display: flex;
+				width: fit-content;
+				height: fit-content;
+				gap: 10px;
+			}
+
+			#apiKeyDialog {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				position: fixed;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				background-color: white;
+				padding: 20px;
+				border-radius: 5px;
+				box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+				z-index: 1001;
+			}
+
+			#apiKeyDialog input {
+				width: 300px;
+				padding: 10px;
+				margin-bottom: 10px;
+				border: 1px solid #ccc;
+				border-radius: 5px;
+			}
+
+			#apiKeyDialog button {
+				padding: 10px 20px;
+				margin: 5px;
+				border: 1px solid #ccc;
+				border-radius: 5px;
+				cursor: pointer;
+			}
+
+			#apiKeyDialog button:disabled {
+				background-color: lightgrey;
+				cursor: not-allowed;
+				color: grey;
+			}
+
+			#apiKeyDialog button:disabled:hover {
+				cursor: not-allowed;
+			}
+
+			#apiKeyDialog #apiKeyStatus {
+				margin-bottom: 10px;
+			}
+
+			body.apiKeyDialogOpen {
+				overflow: hidden;
+			}
+			.dark-mode #apiKeyDialog {
+				background-color: #333;
+				color: white;
+			}
+			.dark-mode #apiKeyDialog input {
+				background-color: #333;
+				color: white;
+				border: 1px solid white;
+			}
+			.dark-mode #apiKeyDialog button {
+				background-color: #333;
+				color: white;
+				border: 1px solid white;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="mindmap"></div>
+		<input type="text" id="apiKeyInput" style="display: none" />
 		<div id="loadingIndicator" style="display: none">
 			<div>Loading...</div>
 		</div>
-
-		<button id="generateButton">map</button>
-		<button id="downloadButton">save</button>
+		<div id="apiKeyDialog" style="display: none">
+			<input
+				type="password"
+				id="apiKeyInputDialog"
+				required
+				placeholder="Enter API Key"
+			/>
+			<div id="apiKeyStatus"></div>
+			<button id="saveApiKey">Save</button>
+			<button id="clearApiKey">Clear</button>
+			<button id="cancelApiKey">Cancel</button>
+		</div>
+		<div class="buttons-container">
+			<button id="generateButton">map</button>
+			<button id="downloadButton">save</button>
+			<button
+				id="settingsButton"
+				style="
+					color: black;
+					background-color: white;
+					border: 2px solid #333;
+					border-radius: 5px;
+					cursor: pointer;
+				"
+			>
+				Settings
+			</button>
+			<button id="modeButton">Dark Mode</button>
+		</div>
+		<div
+			id="toast"
+			style="
+				display: none;
+				position: fixed;
+				bottom: 20px;
+				right: 20px;
+				background-color: #333;
+				color: white;
+				padding: 10px;
+				border-radius: 5px;
+			"
+		></div>
 
 		<a class="support" href="https://ko-fi.com/X7X616PGB7" target="_blank">
 			<img

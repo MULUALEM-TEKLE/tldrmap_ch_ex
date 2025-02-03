@@ -1,27 +1,27 @@
 chrome.runtime.onInstalled.addListener(() => {
-	// Set the default value for your API key
-	chrome.storage.local.set(
-		{ apiKey: "AIzaSyANHIHToyaTc_Bhqce-qlU_w3osu3N1IJc" },
-		() => {
-			console.log("API Key saved to local storage.")
-		}
-	)
-})
-
-let apiKey_ = "AIzaSyANHIHToyaTc_Bhqce-qlU_w3osu3N1IJc" // Declare a variable to hold the key
-/* chrome.runtime.onInstalled.addListener(() => {
-	chrome.storage.local.get(["apiKey"], ({ apiKey }) => {
-		if (!apiKey) {
-			// Prompt the user for their API key on first install
-			console.log("No API key found, prompting user...")
-			// Use a UI popup to ask for the key (see below)
-		} else {
-			console.log("API Key loaded from storage:", apiKey)
-			apiKey_ = apiKey
-		}
+	chrome.storage.sync.get(["apiKey"], (result) => {
+		apiKey_ = result.apiKey || "" // Default to empty string if not found
+		console.log("API Key loaded from storage:", apiKey_)
 	})
 })
- */
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+	if (request.action === "setApiKey") {
+		chrome.storage.sync.set({ apiKey: request.apiKey }, () => {
+			apiKey_ = request.apiKey
+			console.log("API Key updated:", apiKey_)
+			sendResponse({ success: true })
+		})
+		return true // Indicate asynchronous response
+	} else if (request.action === "getApiKey") {
+		sendResponse({ apiKey: apiKey_ })
+	} else if (request.action === "getText") {
+		// Existing message handling code...
+	}
+})
+
+let apiKey_ = "" // Declare a variable to hold the key
+
 // ... rest of your background script code ...
 
 let isProcessing = false

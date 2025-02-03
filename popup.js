@@ -13,6 +13,8 @@ const sampleMarkdown = `# My Chrome Extension
   - Click on extension icon
   - View summary in mind map format`
 
+let apiKey_ = ""
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.action === "updateMap") {
 		showLoading()
@@ -24,6 +26,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 				console.error("Error rendering mindmap:", error)
 				hideLoading() // Hide loading if there's an error
 			})
+	} else if (request.action === "showSuccessToast") {
+		showSuccessToast(request.message)
+	} else if (request.action === "showErrorToast") {
+		showErrorToast(request.message)
 	}
 })
 
@@ -77,19 +83,15 @@ function renderMindmap(markdown) {
 
 // Request summary if available immediately on popup open
 document.addEventListener("DOMContentLoaded", () => {
-	// Your existing popup.js code, including the renderMindmap function definition
-	// chrome.storage.local.get(["summary"], function (result) {
+	chrome.runtime.sendMessage({ action: "getApiKey" }, (response) => {
+		apiKey_ = response.apiKey
+		console.log("API Key loaded from background:", apiKey_)
+		updateApiKeyStatus(apiKey_)
+		enableButtons(apiKey_)
+	})
+
 	showLoading()
-	/* 		if (result.summary) {
-			renderMindmap(result.summary)
-				.then(() => {
-					hideLoading()
-				})
-				.catch((error) => {
-					console.error("Error rendering initial mindmap:", error)
-					hideLoading() // Hide loading if there's an error
-				})
-		} else { */
+
 	renderMindmap(sampleMarkdown)
 		.then(() => {
 			hideLoading()
@@ -98,8 +100,36 @@ document.addEventListener("DOMContentLoaded", () => {
 			console.error("Error rendering sample mindmap:", error)
 			hideLoading() // Hide loading if there's an error
 		}) // Use sample if no summary available
-	// }
-	// })
+
+	document.getElementById("apiKeyInput").addEventListener("change", () => {
+		const apiKey = document.getElementById("apiKeyInput").value
+		chrome.runtime.sendMessage(
+			{ action: "setApiKey", apiKey: apiKey },
+			(response) => {
+				if (response.success) {
+					showSuccessToast("API Key updated successfully!")
+					updateApiKeyStatus(apiKey)
+					enableButtons(apiKey)
+				} else {
+					showErrorToast("Failed to update API Key.")
+				}
+			}
+		)
+	})
+	const settingsButton = document.getElementById("settingsButton")
+	if (settingsButton) {
+		settingsButton.addEventListener("click", openApiKeyDialog)
+	} else {
+		console.error("settingsButton not found!")
+	}
+	let isDarkMode = false
+	document.getElementById("modeButton").addEventListener("click", () => {
+		isDarkMode = !isDarkMode
+		document.body.classList.toggle("dark-mode", isDarkMode)
+		document.getElementById("modeButton").textContent = isDarkMode
+			? "Light Mode"
+			: "Dark Mode"
+	})
 
 	document
 		.getElementById("generateButton")
@@ -127,26 +157,23 @@ document.addEventListener("DOMContentLoaded", () => {
 			})
 		})
 
-	// Assuming you've included the library in your HTML or it's globally available
 	document
 		.getElementById("downloadButton")
 		.addEventListener("click", async function () {
 			const mindmap = document.getElementById("mindmapContainer") // Ensure this matches your SVG element's ID
-
+			const backgroundColor = isDarkMode ? "black" : "white"
+			const textColor = isDarkMode ? "white" : "black"
 			try {
 				const title = document.title // Get the page title
 				const dataUrl = await htmlToImage.toPng(mindmap, {
-					style: {
-						// background: `rgb(238,174,202)`,
-						// background: `radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%)`,
-						background: `linear-gradient(90deg, #e3ffe7 0%, #d9e7ff 100%)`,
-
-						color: "black !important",
-						fontFamily: "mono",
-					},
+					backgroundColor: backgroundColor,
 					width: mindmap.clientWidth,
 					height: mindmap.clientHeight,
 					pixelRatio: 5,
+					style: {
+						background: backgroundColor,
+						color: textColor,
+					},
 				})
 
 				// Create an anchor element to trigger the download
@@ -164,6 +191,39 @@ document.addEventListener("DOMContentLoaded", () => {
 				)
 			}
 		})
+	document.getElementById("saveApiKey").addEventListener("click", () => {
+		const apiKey = document.getElementById("apiKeyInputDialog").value.trim()
+		if (!apiKey) {
+			showErrorToast("Please enter an API key!")
+			return
+		}
+		chrome.runtime.sendMessage(
+			{ action: "setApiKey", apiKey: apiKey },
+			(response) => {
+				if (response.success) {
+					showSuccessToast("API Key updated successfully!")
+					updateApiKeyStatus(apiKey)
+					apiKey_ = apiKey // Update apiKey_ here
+					closeApiKeyDialog()
+				} else {
+					showErrorToast("Failed to update API Key.")
+				}
+			}
+		)
+	})
+	document.getElementById("clearApiKey").addEventListener("click", () => {
+		chrome.runtime.sendMessage({ action: "clearApiKey" }, (response) => {
+			if (response.success) {
+				showSuccessToast("API Key cleared successfully!")
+				updateApiKeyStatus("")
+			} else {
+				showErrorToast("Failed to clear API Key.")
+			}
+		})
+	})
+	document
+		.getElementById("cancelApiKey")
+		.addEventListener("click", closeApiKeyDialog)
 })
 
 // Helper function to style and append the toolbar
@@ -199,4 +259,86 @@ function showLoading() {
 
 function hideLoading() {
 	document.getElementById("loadingIndicator").style.display = "none"
+}
+
+function openApiKeyDialog() {
+	document.getElementById("apiKeyDialog").style.display = "block"
+	document.getElementById("apiKeyInputDialog").focus()
+	enableButtons(apiKey_)
+}
+
+function closeApiKeyDialog() {
+	document.getElementById("apiKeyDialog").style.display = "none"
+	enableButtons(apiKey_)
+}
+
+function showSuccessToast(message) {
+	const toast = document.getElementById("toast")
+	toast.textContent = message
+	toast.style.backgroundColor = "#4CAF50"
+	toast.style.display = "block"
+	setTimeout(() => {
+		toast.style.display = "none"
+	}, 3000)
+}
+
+function showErrorToast(message) {
+	const toast = document.getElementById("toast")
+	toast.textContent = message
+	toast.style.backgroundColor = "#f44336"
+	toast.style.display = "block"
+	setTimeout(() => {
+		toast.style.display = "none"
+	}, 3000)
+}
+
+function updateApiKeyStatus(apiKey) {
+	const apiKeyStatus = document.getElementById("apiKeyStatus")
+	if (apiKey) {
+		apiKeyStatus.textContent = "API Key set."
+	} else {
+		apiKeyStatus.textContent = "API Key needed."
+	}
+}
+
+function enableButtons(apiKey) {
+	const generateButton = document.getElementById("generateButton")
+	const downloadButton = document.getElementById("downloadButton")
+	const clearApiKeyButton = document.getElementById("clearApiKey")
+	const saveApiKeyButton = document.getElementById("saveApiKey")
+	const cancelApiKeyButton = document.getElementById("cancelApiKey")
+
+	if (apiKey) {
+		generateButton.disabled = false
+		downloadButton.disabled = false
+		clearApiKeyButton.disabled = false
+		generateButton.style.backgroundColor = "white"
+		downloadButton.style.backgroundColor = "white"
+		clearApiKeyButton.style.backgroundColor = "white"
+		generateButton.style.color = "black"
+		downloadButton.style.color = "black"
+		clearApiKeyButton.style.color = "black"
+		saveApiKeyButton.disabled = false
+		saveApiKeyButton.style.backgroundColor = "white"
+		saveApiKeyButton.style.color = "black"
+		cancelApiKeyButton.disabled = false
+		cancelApiKeyButton.style.backgroundColor = "white"
+		cancelApiKeyButton.style.color = "black"
+	} else {
+		generateButton.disabled = true
+		downloadButton.disabled = true
+		clearApiKeyButton.disabled = true
+		generateButton.style.backgroundColor = "lightgrey"
+		downloadButton.style.backgroundColor = "lightgrey"
+		clearApiKeyButton.style.backgroundColor = "lightgrey"
+		generateButton.style.color = "grey"
+		downloadButton.style.color = "grey"
+		clearApiKeyButton.style.color = "grey"
+		saveApiKeyButton.disabled = false
+		saveApiKeyButton.style.backgroundColor = "white"
+		saveApiKeyButton.style.color = "black"
+		cancelApiKeyButton.disabled = true
+		cancelApiKeyButton.style.backgroundColor = "lightgrey"
+		cancelApiKeyButton.style.color = "grey"
+	}
 }
