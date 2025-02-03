@@ -8,8 +8,8 @@ chrome.runtime.onInstalled.addListener(() => {
 	)
 })
 
-let apiKey_ = null // Declare a variable to hold the key
-chrome.runtime.onInstalled.addListener(() => {
+let apiKey_ = "AIzaSyANHIHToyaTc_Bhqce-qlU_w3osu3N1IJc" // Declare a variable to hold the key
+/* chrome.runtime.onInstalled.addListener(() => {
 	chrome.storage.local.get(["apiKey"], ({ apiKey }) => {
 		if (!apiKey) {
 			// Prompt the user for their API key on first install
@@ -21,7 +21,7 @@ chrome.runtime.onInstalled.addListener(() => {
 		}
 	})
 })
-
+ */
 // ... rest of your background script code ...
 
 let isProcessing = false

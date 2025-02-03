@@ -30,7 +30,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 const options = {
 	duration: 500,
 	maxWidth: 400,
-	initialExpandLevel: 2,
+	initialExpandLevel: -2,
 	zoom: true,
 	pan: true,
 	spacingHorizontal: 80,
@@ -136,7 +136,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			try {
 				const title = document.title // Get the page title
 				const dataUrl = await htmlToImage.toPng(mindmap, {
-					backgroundColor: "black",
+					style: {
+						// background: `rgb(238,174,202)`,
+						// background: `radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%)`,
+						background: `linear-gradient(90deg, #e3ffe7 0%, #d9e7ff 100%)`,
+
+						color: "black !important",
+						fontFamily: "mono",
+					},
 					width: mindmap.clientWidth,
 					height: mindmap.clientHeight,
 					pixelRatio: 5,
