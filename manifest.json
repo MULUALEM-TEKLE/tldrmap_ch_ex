@@ -1,7 +1,8 @@
 {
-	"name": "Gemini Markmap Extension",
-	"version": "1.0",
+	"name": "tldr.map",
+	"version": "0.0.0.1",
 	"manifest_version": 3,
+	"description": "tldr.map is an extension that creates a mindmap of any webpage content so you can proccess information faster.",
 	"action": {
 		"default_popup": "popup.html",
 		"resizable": true
