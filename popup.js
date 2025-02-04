@@ -158,7 +158,9 @@ function enableButtons(apiKey) {
 document.addEventListener("DOMContentLoaded", () => {
 	chrome.storage.local.get(["apiKey", "defaultPrompt"], function (result) {
 		apiKey_ = result.apiKey
-		defaultPrompt_ = result.defaultPrompt
+		defaultPrompt_ =
+			result.defaultPrompt ||
+			"You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text"
 		if (log) console.log("API Key loaded from local storage:", apiKey_)
 		if (log)
 			console.log("Default Prompt loaded from local storage:", defaultPrompt_)
@@ -345,12 +347,20 @@ document.addEventListener("DOMContentLoaded", () => {
 			showSuccessToast("Default Prompt updated successfully!")
 			updateDefaultPromptStatus(defaultPrompt)
 			defaultPrompt_ = defaultPrompt // Update defaultPrompt_ here
-			closeDefaultPromptDialog()
 		})
 	})
-	document
-		.getElementById("cancelDefaultPrompt")
-		.addEventListener("click", closeDefaultPromptDialog)
+
+	// Load default prompt from local storage and set it in the textarea
+	chrome.storage.local.get(["defaultPrompt"], function (result) {
+		if (result.defaultPrompt !== undefined) {
+			document.getElementById("defaultPromptInputDialog").value =
+				result.defaultPrompt
+		} else {
+			document.getElementById("defaultPromptInputDialog").value =
+				defaultPrompt_ ||
+				"You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text"
+		}
+	})
 })
 
 // Helper function to style and append the toolbar
@@ -433,11 +443,6 @@ function closeApiKeyDialog() {
 function openDefaultPromptDialog() {
 	document.getElementById("defaultPromptDialog").style.display = "block"
 	document.getElementById("defaultPromptInputDialog").focus()
-	if (log) console.log("default prompt is " + defaultPrompt_)
-}
-
-function closeDefaultPromptDialog() {
-	document.getElementById("defaultPromptDialog").style.display = "none"
 	if (log) console.log("default prompt is " + defaultPrompt_)
 }
 
