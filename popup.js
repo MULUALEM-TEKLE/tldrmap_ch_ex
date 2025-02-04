@@ -33,6 +33,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		showSuccessToast(request.message)
 	} else if (request.action === "showErrorToast") {
 		showErrorToast(request.message)
+	} else if (request.action === "hideLoadingOverlay") {
+		hideLoadingOverlay()
 	} else if (request.action === "getApiKey") {
 		chrome.storage.local.get(["apiKey"], function (result) {
 			sendResponse({ apiKey: result.apiKey })

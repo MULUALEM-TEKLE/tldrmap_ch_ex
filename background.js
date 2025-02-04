@@ -38,6 +38,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 			} catch (error) {
 				console.error("Error in summary fetch:", error)
 				showErrorToast(error.message) // Show specific error message
+				chrome.runtime.sendMessage({ action: "hideLoadingOverlay" })
 			} finally {
 				sendResponse({ success: true }) // Send response to avoid timeouts
 			}

@@ -1,1 +1,11 @@
-Refactored `popup.js` and `popup.html` to use toasts instead of a full-screen loading indicator. The loading indicator styles have been removed from `popup.html`, and `popup.js` now uses the existing toast functionality to display messages for mapping progress and errors. The `showLoading()` and `hideLoading()` functions have been replaced with `showMappingToast()`, `showMapGeneratedToast()`, and `showTryAgainToast()`. These functions use a helper function `showCustomToast()` to display toasts with custom background colors. All changes are complete.
+# Active Context
+
+## Current Task: Improve Error Handling in Background Script
+
+The task was to enhance the error handling in `background.js` to include canceling the loading screen when map generation fails. This involved adding a call to `chrome.runtime.sendMessage({ action: "hideLoadingOverlay" })` within the `catch` block of the `getText` message handler.
+
+The `replace_in_file` tool was successfully used to make this change in `popup.js`. The updated `background.js` file is now correctly handling errors and canceling the loading screen. Testing confirmed that both the toast messages and loading screen cancellation are working correctly.
+
+## Next Steps:
+
+- Proceed to the next task.
