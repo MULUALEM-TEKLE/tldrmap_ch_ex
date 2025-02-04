@@ -125,6 +125,11 @@ async function fetchSummary(text) {
 		return data.candidates[0].content.parts[0].text // Adjust based on actual response structure
 	} catch (error) {
 		console.error("Error in fetchSummary:", error)
+		chrome.runtime.sendMessage({
+			action: "showErrorToast",
+			message:
+				"Error generating map. Please close and open the extension or try again.",
+		})
 		return "Error generating summary" // or some default message
 	}
 }
