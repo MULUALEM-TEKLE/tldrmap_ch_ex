@@ -1,3 +1,7 @@
+let apiKey = "" // Declare a variable to hold the key
+let defaultPrompt =
+	"You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text" // Declare a variable to hold the default prompt
+
 chrome.runtime.onInstalled.addListener(() => {
 	chrome.storage.local.get(["apiKey", "defaultPrompt"], (result) => {
 		if (result.apiKey !== undefined) {
@@ -88,12 +92,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	}
 })
 
-let apiKey = "" // Declare a variable to hold the key
-let defaultPrompt =
-	"You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text" // Declare a variable to hold the default prompt
-
-// ... rest of your background script code ...
-
 let isProcessing = false
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.action === "getText") {
@@ -171,12 +169,12 @@ async function fetchSummary(text) {
 		// Gemini API response format might differ, here we assume it returns text in a certain structure
 		return data.candidates[0].content.parts[0].text // Adjust based on actual response structure
 	} catch (error) {
-		console.error("Error in fetchSummary:", error)
 		chrome.runtime.sendMessage({
 			action: "showErrorToast",
 			message:
 				"Error generating map. Please close and open the extension or try again.",
 		})
+		console.error("Error in fetchSummary:", error)
 		return "Error generating summary" // or some default message
 	}
 }

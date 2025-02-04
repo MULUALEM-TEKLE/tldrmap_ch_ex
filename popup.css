@@ -27,6 +27,14 @@ body {
 	cursor: pointer;
 }
 
+.dark-mode #generateButton,
+.dark-mode #downloadButton,
+.dark-mode #settingsButton {
+	background-color: #333;
+	color: white;
+	border: 1px solid green;
+}
+
 #generateButton:disabled,
 #downloadButton:disabled,
 #apiKeyDialog button:disabled {
@@ -163,7 +171,8 @@ body.apiKeyDialogOpen {
 	background-color: #333;
 	color: white;
 }
-.dark-mode #apiKeyDialog input {
+.dark-mode #apiKeyDialog input,
+.dark-mode #apiKeyDialog textarea {
 	background-color: #333;
 	color: white;
 	border: 1px solid white;
