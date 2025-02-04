@@ -16,6 +16,7 @@ const sampleMarkdown = `# My Chrome Extension
   - View summary in mind map format`
 
 let apiKey_ = ""
+let defaultPrompt_ = ""
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.action === "updateMap") {
@@ -46,6 +47,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		chrome.storage.local.remove(["apiKey"], function () {
 			sendResponse({ success: true })
 		})
+		return true // Will respond asynchronously.
+	} else if (request.action === "getDefaultPrompt") {
+		chrome.storage.local.get(["defaultPrompt"], function (result) {
+			sendResponse({ defaultPrompt: result.defaultPrompt })
+		})
+		return true // Will respond asynchronously.
+	} else if (request.action === "setDefaultPrompt") {
+		chrome.storage.local.set(
+			{ defaultPrompt: request.defaultPrompt },
+			function () {
+				sendResponse({ success: true })
+			}
+		)
 		return true // Will respond asynchronously.
 	}
 })
@@ -142,15 +156,20 @@ function enableButtons(apiKey) {
 
 // Request summary if available immediately on popup open
 document.addEventListener("DOMContentLoaded", () => {
-	chrome.storage.local.get(["apiKey"], function (result) {
+	chrome.storage.local.get(["apiKey", "defaultPrompt"], function (result) {
 		apiKey_ = result.apiKey
+		defaultPrompt_ = result.defaultPrompt
 		if (log) console.log("API Key loaded from local storage:", apiKey_)
+		if (log)
+			console.log("Default Prompt loaded from local storage:", defaultPrompt_)
 		updateApiKeyStatus(apiKey_)
+		updateDefaultPromptStatus(defaultPrompt_)
 		enableButtons(apiKey_)
 
 		if (apiKey_ !== undefined && apiKey_ !== "") {
 			// If API key is already present, do not show the settings dialog
 			document.getElementById("apiKeyInputDialog").value = apiKey_
+			document.getElementById("defaultPromptInputDialog").value = defaultPrompt_
 			renderMindmap(sampleMarkdown)
 				.then(() => {
 					// hideLoading()
@@ -182,6 +201,26 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			)
 		})
+
+	document
+		.getElementById("defaultPromptInputDialog")
+		.addEventListener("change", () => {
+			const defaultPrompt = document.getElementById(
+				"defaultPromptInputDialog"
+			).value
+			chrome.runtime.sendMessage(
+				{ action: "setDefaultPrompt", defaultPrompt: defaultPrompt },
+				(response) => {
+					if (response.success) {
+						showSuccessToast("Default Prompt updated successfully!")
+						updateDefaultPromptStatus(defaultPrompt)
+					} else {
+						showErrorToast("Failed to update Default Prompt.")
+					}
+				}
+			)
+		})
+
 	const settingsButton = document.getElementById("settingsButton")
 	if (settingsButton) {
 		settingsButton.addEventListener("click", openApiKeyDialog)
@@ -293,6 +332,25 @@ document.addEventListener("DOMContentLoaded", () => {
 	document
 		.getElementById("cancelApiKey")
 		.addEventListener("click", closeApiKeyDialog)
+
+	document.getElementById("saveDefaultPrompt").addEventListener("click", () => {
+		const defaultPrompt = document
+			.getElementById("defaultPromptInputDialog")
+			.value.trim()
+		if (!defaultPrompt) {
+			showErrorToast("Please enter a default prompt!")
+			return
+		}
+		chrome.storage.local.set({ defaultPrompt: defaultPrompt }, function () {
+			showSuccessToast("Default Prompt updated successfully!")
+			updateDefaultPromptStatus(defaultPrompt)
+			defaultPrompt_ = defaultPrompt // Update defaultPrompt_ here
+			closeDefaultPromptDialog()
+		})
+	})
+	document
+		.getElementById("cancelDefaultPrompt")
+		.addEventListener("click", closeDefaultPromptDialog)
 })
 
 // Helper function to style and append the toolbar
@@ -372,6 +430,17 @@ function closeApiKeyDialog() {
 	enableButtons(apiKey_)
 }
 
+function openDefaultPromptDialog() {
+	document.getElementById("defaultPromptDialog").style.display = "block"
+	document.getElementById("defaultPromptInputDialog").focus()
+	if (log) console.log("default prompt is " + defaultPrompt_)
+}
+
+function closeDefaultPromptDialog() {
+	document.getElementById("defaultPromptDialog").style.display = "none"
+	if (log) console.log("default prompt is " + defaultPrompt_)
+}
+
 function showSuccessToast(message) {
 	const toast = document.getElementById("toast")
 	toast.textContent = message
@@ -398,5 +467,14 @@ function updateApiKeyStatus(apiKey) {
 		apiKeyStatus.textContent = "API Key set."
 	} else {
 		apiKeyStatus.textContent = "API Key needed."
+	}
+}
+
+function updateDefaultPromptStatus(defaultPrompt) {
+	const defaultPromptStatus = document.getElementById("defaultPromptStatus")
+	if (defaultPrompt && defaultPrompt !== "") {
+		defaultPromptStatus.textContent = "Default Prompt set."
+	} else {
+		defaultPromptStatus.textContent = "Default Prompt needed."
 	}
 }
