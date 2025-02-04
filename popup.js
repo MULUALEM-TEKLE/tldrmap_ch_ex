@@ -192,9 +192,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	document.getElementById("modeButton").addEventListener("click", () => {
 		isDarkMode = !isDarkMode
 		document.body.classList.toggle("dark-mode", isDarkMode)
-		document.getElementById("modeButton").textContent = isDarkMode
-			? "Light Mode"
-			: "Dark Mode"
+		document.getElementById("modeButton").innerHTML = isDarkMode
+			? '<img src="icons/sun.svg" alt="Light Mode">'
+			: '<img src="icons/moon-star.svg" alt="Dark Mode">'
 	})
 
 	document

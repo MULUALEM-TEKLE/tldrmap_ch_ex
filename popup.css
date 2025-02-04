@@ -59,9 +59,17 @@ body {
 	border: none;
 	cursor: pointer;
 }
-.dark-mode #modeButton {
-	background-color: #333;
-	color: white;
+:root {
+	--icon-color-light: black;
+	--icon-color-dark: goldenrod;
+}
+
+#modeButton img {
+	color: var(--icon-color-light); /* Black color in light mode */
+}
+
+.dark-mode #modeButton img {
+	color: var(--icon-color-dark); /* Golden color in dark mode */
 }
 .dark-mode #generateButton {
 	background-color: #333;
