@@ -75,7 +75,7 @@ async function fetchSummary(text) {
 		showErrorToast(
 			"API Key is not set. Please set your API key in the options."
 		)
-		throw new Error("API Key is not set")
+		throw new Error("Something went wrong, please try again, =)")
 	}
 
 	// Here we use the Gemini API endpoint to generate a summary.

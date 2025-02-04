@@ -238,6 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.getElementById("modeButton").innerHTML = isDarkMode
 			? '<img src="icons/sun.svg" alt="Light Mode">'
 			: '<img src="icons/moon-star.svg" alt="Dark Mode">'
+		updateTheme()
 	})
 
 	document
@@ -365,11 +366,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	})
 
 	document.addEventListener("DOMContentLoaded", () => {
-		updateButtonTheme()
+		updateTheme()
 	})
 
 	document.getElementById("modeButton").addEventListener("click", () => {
-		updateButtonTheme()
+		updateTheme()
 	})
 })
 
@@ -437,16 +438,16 @@ function showCustomToast(message, backgroundColor) {
 	}, 3000)
 }
 
-function updateButtonTheme() {
-	const buttons = document.querySelectorAll("button")
+function updateTheme() {
 	const isDarkMode = document.body.classList.contains("dark-mode")
-	buttons.forEach((button) => {
+	const elementsToStyle = document.querySelectorAll(
+		"body, #mindmap, .mm-toolbar, #generateButton, #downloadButton, #settingsButton, #saveApiKey, #clearApiKey, #cancelApiKey, #saveDefaultPrompt, #apiKeyDialog, #apiKeyDialog input, #apiKeyDialog textarea, #apiKeyDialog button, #loadingIndicator"
+	)
+	elementsToStyle.forEach((element) => {
 		if (isDarkMode) {
-			button.style.backgroundColor = "black"
-			button.style.color = "white"
+			element.classList.add("dark-mode")
 		} else {
-			button.style.backgroundColor = "white"
-			button.style.color = "black"
+			element.classList.remove("dark-mode")
 		}
 	})
 }
