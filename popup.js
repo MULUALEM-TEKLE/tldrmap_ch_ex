@@ -314,11 +314,21 @@ function setupToolbar(el, container) {
 	if (log) console.log("added toolbar")
 }
 
+function showLoadingOverlay() {
+	document.getElementById("loadingOverlay").style.display = "flex"
+}
+
+function hideLoadingOverlay() {
+	document.getElementById("loadingOverlay").style.display = "none"
+}
+
 function showMappingToast() {
+	showLoadingOverlay()
 	showCustomToast("Started to generate map", "#777700")
 }
 
 function showMapGeneratedToast() {
+	hideLoadingOverlay()
 	showCustomToast("Map Generated", "#00dd00")
 }
 
@@ -327,6 +337,7 @@ function showImageDownloadedToast() {
 }
 
 function showTryAgainToast() {
+	hideLoadingOverlay()
 	showCustomToast("Try again", "#dd0000")
 }
 
