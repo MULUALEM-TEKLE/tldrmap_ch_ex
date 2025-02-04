@@ -150,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		if (apiKey_ !== undefined && apiKey_ !== "") {
 			// If API key is already present, do not show the settings dialog
+			document.getElementById("apiKeyInputDialog").value = apiKey_
 			renderMindmap(sampleMarkdown)
 				.then(() => {
 					// hideLoading()

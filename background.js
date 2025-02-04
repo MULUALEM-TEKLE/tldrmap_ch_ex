@@ -10,6 +10,17 @@ chrome.runtime.onInstalled.addListener(() => {
 	})
 })
 
+// Ensure the API key is retrieved from storage before making any requests
+chrome.storage.local.get(["apiKey"], (result) => {
+	if (result.apiKey !== undefined) {
+		apiKey = result.apiKey
+		console.log("API Key loaded from storage:", apiKey)
+	} else {
+		apiKey = ""
+		console.error("API Key is undefined in storage")
+	}
+})
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.action === "setApiKey") {
 		chrome.storage.local.set({ apiKey: request.apiKey }, () => {
@@ -61,6 +72,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			})
 			.catch((error) => {
 				console.error("Error in summary fetch:", error)
+				chrome.runtime.sendMessage({
+					action: "showErrorToast",
+					message:
+						"Error generating map. Please close and open the extension or try again.",
+				})
 			})
 			.finally(() => {
 				isProcessing = false // Reset the flag
