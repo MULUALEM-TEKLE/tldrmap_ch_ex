@@ -1,6 +1,8 @@
 const { Transformer, builtInPlugins } = window.markmap
 const { loadCSS, loadJS, Markmap, Toolbar } = window.markmap
 
+const log = false
+
 // Sample Markdown content for testing
 const sampleMarkdown = `# My Chrome Extension
 - **Purpose**
@@ -30,6 +32,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		showSuccessToast(request.message)
 	} else if (request.action === "showErrorToast") {
 		showErrorToast(request.message)
+	} else if (request.action === "getApiKey") {
+		chrome.storage.local.get(["apiKey"], function (result) {
+			sendResponse({ apiKey: result.apiKey })
+		})
+		return true // Will respond asynchronously.
+	} else if (request.action === "setApiKey") {
+		chrome.storage.local.set({ apiKey: request.apiKey }, function () {
+			sendResponse({ success: true })
+		})
+		return true // Will respond asynchronously.
+	} else if (request.action === "clearApiKey") {
+		chrome.storage.local.remove(["apiKey"], function () {
+			sendResponse({ success: true })
+		})
+		return true // Will respond asynchronously.
 	}
 })
 
@@ -53,7 +70,7 @@ const { Toolbar } = markmap; */
 
 function renderMindmap(markdown) {
 	return new Promise((resolve) => {
-		console.log("rendering mindmap")
+		if (log) console.log("rendering mindmap")
 		const mindmapContainer = document.getElementById("mindmap")
 		mindmapContainer.innerHTML = "" // Clear previous content
 
@@ -68,7 +85,7 @@ function renderMindmap(markdown) {
 		const { root, features } = transformer.transform(markdown)
 		const assets = transformer.getUsedAssets(features)
 
-		console.log(Toolbar)
+		if (log) console.log(Toolbar)
 
 		// Create markmap
 		let mm = Markmap.create(svgEl, options, root)
@@ -125,31 +142,27 @@ function enableButtons(apiKey) {
 
 // Request summary if available immediately on popup open
 document.addEventListener("DOMContentLoaded", () => {
-	chrome.runtime.sendMessage({ action: "getApiKey" }, (response) => {
-		if (response && response.apiKey !== undefined) {
-			apiKey_ = response.apiKey
-		} else {
-			console.error("API Key is undefined")
-		}
-		console.log("API Key loaded from background:", apiKey_)
+	chrome.storage.local.get(["apiKey"], function (result) {
+		apiKey_ = result.apiKey
+		if (log) console.log("API Key loaded from local storage:", apiKey_)
 		updateApiKeyStatus(apiKey_)
 		enableButtons(apiKey_)
-	})
 
-	renderMindmap(sampleMarkdown)
-		.then(() => {
-			// hideLoading()
-			console.log("apiKey_:", apiKey_)
-			if (apiKey_ === undefined || apiKey_ === "") {
-				openApiKeyDialog()
-			} else {
-				document.getElementById("apiKeyInputDialog").value = apiKey_
-			}
-		})
-		.catch((error) => {
-			console.error("Error rendering sample mindmap:", error)
-			// hideLoading() // Hide loading if there's an error
-		}) // Use sample if no summary available
+		if (apiKey_ !== undefined && apiKey_ !== "") {
+			// If API key is already present, do not show the settings dialog
+			renderMindmap(sampleMarkdown)
+				.then(() => {
+					// hideLoading()
+					if (log) console.log("apiKey_:", apiKey_)
+				})
+				.catch((error) => {
+					console.error("Error rendering sample mindmap:", error)
+					// hideLoading() // Hide loading if there's an error
+				}) // Use sample if no summary available
+		} else {
+			openApiKeyDialog()
+		}
+	})
 
 	document
 		.getElementById("apiKeyInputDialog")
@@ -251,32 +264,21 @@ document.addEventListener("DOMContentLoaded", () => {
 			showErrorToast("Please enter an API key!")
 			return
 		}
-		chrome.runtime.sendMessage(
-			{ action: "setApiKey", apiKey: apiKey },
-			(response) => {
-				if (response && response.success) {
-					showSuccessToast("API Key updated successfully!")
-					updateApiKeyStatus(apiKey)
-					apiKey_ = apiKey // Update apiKey_ here
-					closeApiKeyDialog()
-				} else {
-					showErrorToast("Failed to update API Key.")
-				}
-			}
-		)
+		chrome.storage.local.set({ apiKey: apiKey }, function () {
+			showSuccessToast("API Key updated successfully!")
+			updateApiKeyStatus(apiKey)
+			apiKey_ = apiKey // Update apiKey_ here
+			closeApiKeyDialog()
+		})
 	})
 	document.getElementById("clearApiKey").addEventListener("click", () => {
-		chrome.runtime.sendMessage({ action: "clearApiKey" }, (response) => {
-			if (response && response.success) {
-				showSuccessToast("API Key cleared successfully!")
-				updateApiKeyStatus("")
-				document.getElementById("apiKeyInputDialog").value = ""
-				apiKey_ = undefined
-				closeApiKeyDialog()
-				enableButtons(null)
-			} else {
-				showErrorToast("Failed to clear API Key.")
-			}
+		chrome.storage.local.remove(["apiKey"], function () {
+			showSuccessToast("API Key cleared successfully!")
+			updateApiKeyStatus("")
+			document.getElementById("apiKeyInputDialog").value = ""
+			apiKey_ = undefined
+			closeApiKeyDialog()
+			enableButtons(null)
 		})
 	})
 	document
@@ -308,7 +310,7 @@ function setupToolbar(el, container) {
 
 	container.append(el)
 
-	console.log("added toolbar")
+	if (log) console.log("added toolbar")
 }
 
 function showMappingToast() {
@@ -340,13 +342,13 @@ function showCustomToast(message, backgroundColor) {
 function openApiKeyDialog() {
 	document.getElementById("apiKeyDialog").style.display = "block"
 	document.getElementById("apiKeyInputDialog").focus()
-	console.log("api key is " + apiKey_)
+	if (log) console.log("api key is " + apiKey_)
 	enableButtons(apiKey_)
 }
 
 function closeApiKeyDialog() {
 	document.getElementById("apiKeyDialog").style.display = "none"
-	console.log("api key is " + apiKey_)
+	if (log) console.log("api key is " + apiKey_)
 	enableButtons(apiKey_)
 }
 

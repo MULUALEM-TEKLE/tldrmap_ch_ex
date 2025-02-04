@@ -1,5 +1,5 @@
 chrome.runtime.onInstalled.addListener(() => {
-	chrome.storage.sync.get(["apiKey"], (result) => {
+	chrome.storage.local.get(["apiKey"], (result) => {
 		if (result.apiKey !== undefined) {
 			apiKey = result.apiKey
 		} else {
@@ -12,7 +12,7 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.action === "setApiKey") {
-		chrome.storage.sync.set({ apiKey: request.apiKey }, () => {
+		chrome.storage.local.set({ apiKey: request.apiKey }, () => {
 			if (request.apiKey !== undefined) {
 				apiKey = request.apiKey
 			} else {
@@ -32,7 +32,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	} else if (request.action === "getText") {
 		// Existing message handling code...
 	} else if (request.action === "clearApiKey") {
-		chrome.storage.sync.remove(["apiKey"], () => {
+		chrome.storage.local.remove(["apiKey"], () => {
 			apiKey = undefined
 			console.log("API Key cleared from storage")
 			sendResponse({ success: true })
@@ -70,10 +70,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function fetchSummary(text) {
 	try {
-		// existing code
+		// Check if the API key is valid
+		if (!apiKey) {
+			throw new Error("API Key is not set")
+		}
 
 		// Here we use the Gemini API endpoint to generate a summary.
-
 		const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
 
 		const defaultPrompt = `You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text # • MANDATORY! always add a brand last sub-branch in bold text always "mapped with ❤️ by xar - like, repost and follow"`
