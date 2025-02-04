@@ -1,10 +1,15 @@
 # Active Context
 
-## Current Task: Generate Icons for Extension
+## Current Task
 
-The task is to generate icons for the extension based on the provided rules. The icons need to be in PNG format and should be 16x16, 48x48, and 128x128 pixels. The icons will be used for different purposes such as during installation, in the extensions management page, and as favicons.
+Creating a comprehensive description and markdown file summarizing the functionality of the Gemini Markmap Extension based on the analysis of `popup.js` and `background.js`.
 
-## Next Steps:
+## Recent Changes
 
-- Write a Python script to generate the required icons from a single image.
-- Update the `manifest.json` file to include the new icons.
+- Read `cline_docs/productContext.md` to understand the project context.
+- Analyzed `popup.js` and `background.js` to understand the extension's functionality.
+
+## Next Steps
+
+- Create a detailed description of the extension's features and functionality.
+- Generate a markdown file with the description.
