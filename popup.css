@@ -130,6 +130,18 @@ body {
 	cursor: pointer;
 }
 
+#apiKeyDialog .cancel-button {
+	padding: 5px;
+	margin: 5px;
+	border: 1px solid red;
+	border-radius: 5px;
+	cursor: pointer;
+
+	position: absolute;
+	top: -20px;
+	left: -20px;
+}
+
 #apiKeyDialog button:disabled {
 	background-color: lightgrey;
 	cursor: not-allowed;
