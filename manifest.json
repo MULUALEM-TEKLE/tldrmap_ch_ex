@@ -2,7 +2,7 @@
 	"name": "tldr.map",
 	"version": "0.0.0.1",
 	"manifest_version": 3,
-	"description": "The tldr.map Extension is a Chrome extension designed to help users create visual mind maps from web pages. It leverages the Google Gemini API for summarization and Markmap for rendering the mind maps. The extension provides a user-friendly interface to interact with the mind maps and offers features such as API key management, default prompt customization, and dark mode support.",
+	"description": "The tldr.map Extension is a Chrome extension designed to help users create visual mind maps from web pages.",
 	"action": {
 		"default_popup": "popup.html",
 		"resizable": true
