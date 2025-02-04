@@ -13,7 +13,7 @@ const sampleMarkdown = `# My Chrome Extension
   - Click on extension icon
   - View summary in mind map format`
 
-let apiKey_
+let apiKey_ = ""
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.action === "updateMap") {
@@ -126,7 +126,11 @@ function enableButtons(apiKey) {
 // Request summary if available immediately on popup open
 document.addEventListener("DOMContentLoaded", () => {
 	chrome.runtime.sendMessage({ action: "getApiKey" }, (response) => {
-		apiKey_ = response.apiKey
+		if (response && response.apiKey !== undefined) {
+			apiKey_ = response.apiKey
+		} else {
+			console.error("API Key is undefined")
+		}
 		console.log("API Key loaded from background:", apiKey_)
 		updateApiKeyStatus(apiKey_)
 		enableButtons(apiKey_)
@@ -136,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		.then(() => {
 			// hideLoading()
 			console.log("apiKey_:", apiKey_)
-			if (!apiKey_ || apiKey_ === "") {
+			if (apiKey_ === undefined || apiKey_ === "") {
 				openApiKeyDialog()
 			} else {
 				document.getElementById("apiKeyInputDialog").value = apiKey_
@@ -250,7 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		chrome.runtime.sendMessage(
 			{ action: "setApiKey", apiKey: apiKey },
 			(response) => {
-				if (response.success) {
+				if (response && response.success) {
 					showSuccessToast("API Key updated successfully!")
 					updateApiKeyStatus(apiKey)
 					apiKey_ = apiKey // Update apiKey_ here

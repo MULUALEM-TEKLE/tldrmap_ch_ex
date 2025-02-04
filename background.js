@@ -1,25 +1,39 @@
 chrome.runtime.onInstalled.addListener(() => {
 	chrome.storage.sync.get(["apiKey"], (result) => {
-		apiKey_ = result.apiKey || "" // Default to empty string if not found
-		console.log("API Key loaded from storage:", apiKey_)
+		if (result.apiKey !== undefined) {
+			apiKey = result.apiKey
+		} else {
+			apiKey = ""
+			console.error("API Key is undefined in storage")
+		}
+		console.log("API Key loaded from storage:", apiKey)
 	})
 })
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.action === "setApiKey") {
 		chrome.storage.sync.set({ apiKey: request.apiKey }, () => {
-			apiKey_ = request.apiKey
-			console.log("API Key updated:", apiKey_)
+			if (request.apiKey !== undefined) {
+				apiKey = request.apiKey
+			} else {
+				console.error("API Key is undefined in setApiKey request")
+			}
+			console.log("API Key updated:", apiKey)
 			sendResponse({ success: true })
 		})
 		return true // Indicate asynchronous response
 	} else if (request.action === "getApiKey") {
-		sendResponse({ apiKey: apiKey_ })
+		if (apiKey !== undefined) {
+			sendResponse({ apiKey: apiKey })
+		} else {
+			console.error("API Key is undefined in getApiKey request")
+			sendResponse({ apiKey: "" })
+		}
 	} else if (request.action === "getText") {
 		// Existing message handling code...
 	} else if (request.action === "clearApiKey") {
 		chrome.storage.sync.remove(["apiKey"], () => {
-			apiKey_ = undefined
+			apiKey = undefined
 			console.log("API Key cleared from storage")
 			sendResponse({ success: true })
 		})
@@ -27,7 +41,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	}
 })
 
-let apiKey_ = "" // Declare a variable to hold the key
+let apiKey = "" // Declare a variable to hold the key
 
 // ... rest of your background script code ...
 
@@ -60,7 +74,7 @@ async function fetchSummary(text) {
 
 		// Here we use the Gemini API endpoint to generate a summary.
 
-		const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey_}`
+		const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
 
 		const defaultPrompt = `You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text # • MANDATORY! always add a brand last sub-branch in bold text always "mapped with ❤️ by xar - like, repost and follow"`
 
