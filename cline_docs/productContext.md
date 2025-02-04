@@ -1,3 +1,0 @@
-# Product Context
-
-This project is a Chrome extension named "Gemini Markmap Extension" (version 1.0). Based on the manifest file, it appears to be a mind-mapping or knowledge graph visualization tool. It interacts with web pages, stores data, and potentially executes scripts within the context of those pages. The extension uses `popup.html` for its user interface and `background.js` for background tasks. A content script (`content-scripts.js`) runs on all URLs, suggesting interaction with web page content. The extension requires permissions for `activeTab`, `storage`, and `scripting`. Further investigation is needed to fully understand its functionality and the problems it solves.
