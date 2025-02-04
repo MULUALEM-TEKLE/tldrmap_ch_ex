@@ -270,6 +270,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			updateApiKeyStatus(apiKey)
 			apiKey_ = apiKey // Update apiKey_ here
 			closeApiKeyDialog()
+			renderMindmap(sampleMarkdown)
+				.then(() => {
+					showMapGeneratedToast()
+				})
+				.catch((error) => {
+					console.error("Error rendering mindmap:", error)
+					showTryAgainToast()
+				})
 		})
 	})
 	document.getElementById("clearApiKey").addEventListener("click", () => {
