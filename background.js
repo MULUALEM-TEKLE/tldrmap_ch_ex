@@ -1,12 +1,20 @@
 chrome.runtime.onInstalled.addListener(() => {
-	chrome.storage.local.get(["apiKey"], (result) => {
+	chrome.storage.local.get(["apiKey", "defaultPrompt"], (result) => {
 		if (result.apiKey !== undefined) {
 			apiKey = result.apiKey
 		} else {
 			apiKey = ""
 			console.error("API Key is undefined in storage")
 		}
+		if (result.defaultPrompt !== undefined) {
+			defaultPrompt = result.defaultPrompt
+		} else {
+			defaultPrompt =
+				"You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text"
+			console.error("Default Prompt is undefined in storage")
+		}
 		console.log("API Key loaded from storage:", apiKey)
+		console.log("Default Prompt loaded from storage:", defaultPrompt)
 	})
 })
 
@@ -41,7 +49,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			sendResponse({ apiKey: "" })
 		}
 	} else if (request.action === "getText") {
-		// Existing message handling code...
+		// Ensure the default prompt is loaded from local storage
+		chrome.storage.local.get(["defaultPrompt"], (result) => {
+			if (result.defaultPrompt !== undefined) {
+				defaultPrompt = result.defaultPrompt
+			} else {
+				defaultPrompt =
+					"You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text"
+				console.error("Default Prompt is undefined in storage")
+			}
+			console.log("Default Prompt loaded from storage:", defaultPrompt)
+		})
 	} else if (request.action === "clearApiKey") {
 		chrome.storage.local.remove(["apiKey"], () => {
 			apiKey = undefined
@@ -49,10 +67,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			sendResponse({ success: true })
 		})
 		return true // Indicate asynchronous response
+	} else if (request.action === "setDefaultPrompt") {
+		chrome.storage.local.set({ defaultPrompt: request.defaultPrompt }, () => {
+			if (request.defaultPrompt !== undefined) {
+				defaultPrompt = request.defaultPrompt
+			} else {
+				console.error("Default Prompt is undefined in setDefaultPrompt request")
+			}
+			console.log("Default Prompt updated:", defaultPrompt)
+			sendResponse({ success: true })
+		})
+		return true // Indicate asynchronous response
+	} else if (request.action === "getDefaultPrompt") {
+		if (defaultPrompt !== undefined) {
+			sendResponse({ defaultPrompt: defaultPrompt })
+		} else {
+			console.error("Default Prompt is undefined in getDefaultPrompt request")
+			sendResponse({ defaultPrompt: "" })
+		}
 	}
 })
 
 let apiKey = "" // Declare a variable to hold the key
+let defaultPrompt =
+	"You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text" // Declare a variable to hold the default prompt
 
 // ... rest of your background script code ...
 
@@ -64,6 +102,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			return // Prevents multiple simultaneous requests
 		}
 		isProcessing = true
+		// Ensure the default prompt is loaded from local storage
+		chrome.storage.local.get(["defaultPrompt"], (result) => {
+			if (result.defaultPrompt !== undefined) {
+				defaultPrompt = result.defaultPrompt
+			} else {
+				defaultPrompt =
+					"You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text"
+				console.error("Default Prompt is undefined in storage")
+			}
+			console.log("Default Prompt loaded from storage:", defaultPrompt)
+		})
 		fetchSummary(request.data)
 			.then((summary) => {
 				chrome.storage.local.set({ summary: summary }, () => {
@@ -93,8 +142,6 @@ async function fetchSummary(text) {
 
 		// Here we use the Gemini API endpoint to generate a summary.
 		const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
-
-		const defaultPrompt = `You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text # • MANDATORY! always add a brand last sub-branch in bold text always "mapped with ❤️ by xar - like, repost and follow"`
 
 		const response = await fetch(endpoint, {
 			method: "POST",
