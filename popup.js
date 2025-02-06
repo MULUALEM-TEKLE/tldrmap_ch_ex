@@ -225,10 +225,12 @@ function loadInitialData() {
 		updateApiKeyStatus(apiKey_)
 		updateDefaultPromptStatus(defaultPrompt_)
 		enableButtons(apiKey_)
+		document.getElementById("defaultPromptInputDialog").value =
+			defaultPrompt_ || getDefaultPrompt()
 
 		if (apiKey_ !== undefined && apiKey_ !== "") {
 			document.getElementById("apiKeyInputDialog").value = apiKey_
-			document.getElementById("defaultPromptInputDialog").value = defaultPrompt_
+
 			renderMindmap(sampleMarkdown)
 				.then(() => {
 					if (log) console.log("apiKey_:", apiKey_)
