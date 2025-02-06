@@ -2,19 +2,26 @@ let apiKey = "" // Initialize apiKey
 let defaultPrompt = `You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse.  The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically, with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text`
 
 chrome.runtime.onInstalled.addListener(() => {
-	loadSettingsFromStorage()
+	loadSettingsFromStorage().then(() => {
+		console.log("Settings loaded on installation")
+	})
 })
 
 chrome.runtime.onStartup.addListener(() => {
-	loadSettingsFromStorage()
+	loadSettingsFromStorage().then(() => {
+		console.log("Settings loaded on startup")
+	})
 })
 
-function loadSettingsFromStorage() {
-	chrome.storage.local.get(["apiKey", "defaultPrompt"], (result) => {
-		apiKey = result.apiKey || ""
-		defaultPrompt = result.defaultPrompt || defaultPrompt // Use default if not in storage
-		console.log("API Key loaded from storage:", apiKey)
-		console.log("Default Prompt loaded from storage:", defaultPrompt)
+async function loadSettingsFromStorage() {
+	return new Promise((resolve, reject) => {
+		chrome.storage.local.get(["apiKey", "defaultPrompt"], (result) => {
+			apiKey = result.apiKey || ""
+			defaultPrompt = result.defaultPrompt || defaultPrompt // Use default if not in storage
+			console.log("API Key loaded from storage:", apiKey)
+			console.log("Default Prompt loaded from storage:", defaultPrompt)
+			resolve()
+		})
 	})
 }
 
@@ -33,7 +40,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 			return true // Indicate synchronous response
 
 		case "getText":
-			loadSettingsFromStorage() // Load settings before processing text
+			await loadSettingsFromStorage() // Load settings before processing text
 			try {
 				const summary = await fetchSummary(request.data)
 				chrome.storage.local.set({ summary: summary }, () => {

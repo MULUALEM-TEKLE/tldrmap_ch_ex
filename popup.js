@@ -208,6 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * Initializes the application by setting up event listeners and loading initial data.
  */
 function initializeApp() {
+	toggleDarkMode()
 	loadInitialData()
 	setupEventListeners()
 }
