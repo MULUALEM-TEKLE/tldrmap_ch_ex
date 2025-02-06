@@ -90,7 +90,7 @@ async function fetchSummary(text) {
 	// Here we use the Gemini API endpoint to generate a summary.
 	const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
 
-	const response = await fetch(endpoint, {
+	const response = await fetchWithTimeout(endpoint, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -106,6 +106,7 @@ async function fetchSummary(text) {
 				},
 			],
 		}),
+		timeout: 10000, // 10 seconds timeout
 	})
 
 	// Check if the response was successful
@@ -120,6 +121,20 @@ async function fetchSummary(text) {
 
 	// Gemini API response format might differ, here we assume it returns text in a certain structure
 	return data.candidates[0].content.parts[0].text // Adjust based on actual response structure
+}
+
+async function fetchWithTimeout(resource, options = {}) {
+	const { timeout = 8000 } = options
+
+	const controller = new AbortController()
+	const id = setTimeout(() => controller.abort(), timeout)
+	const response = await fetch(resource, {
+		...options,
+		signal: controller.signal,
+	})
+	clearTimeout(id)
+
+	return response
 }
 
 function showErrorToast(message) {
