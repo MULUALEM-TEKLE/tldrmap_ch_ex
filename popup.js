@@ -19,52 +19,87 @@ let apiKey_ = ""
 
 let defaultPrompt_ = ""
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-	if (request.action === "updateMap") {
-		showMappingToast()
-		renderMindmap(request.data || sampleMarkdown)
-			.then(() => {
-				showMapGeneratedToast()
-			})
-			.catch((error) => {
-				console.error("Error rendering mindmap:", error)
-				showTryAgainToast()
-			})
-	} else if (request.action === "showSuccessToast") {
-		showSuccessToast(request.message)
-	} else if (request.action === "showErrorToast") {
-		showErrorToast(request.message)
-	} else if (request.action === "hideLoadingOverlay") {
-		hideLoadingOverlay()
-	} else if (request.action === "getApiKey") {
-		chrome.storage.local.get(["apiKey"], function (result) {
-			sendResponse({ apiKey: result.apiKey })
-		})
-		return true // Will respond asynchronously.
-	} else if (request.action === "setApiKey") {
-		chrome.storage.local.set({ apiKey: request.apiKey }, function () {
-			sendResponse({ success: true })
-		})
-		return true // Will respond asynchronously.
-	} else if (request.action === "clearApiKey") {
-		chrome.storage.local.remove(["apiKey"], function () {
-			sendResponse({ success: true })
-		})
-		return true // Will respond asynchronously.
-	} else if (request.action === "getDefaultPrompt") {
-		chrome.storage.local.get(["defaultPrompt"], function (result) {
-			sendResponse({ defaultPrompt: result.defaultPrompt })
-		})
-		return true // Will respond asynchronously.
-	} else if (request.action === "setDefaultPrompt") {
-		chrome.storage.local.set(
-			{ defaultPrompt: request.defaultPrompt },
-			function () {
-				sendResponse({ success: true })
-			}
-		)
-		return true // Will respond asynchronously.
+	const handlers = {
+		updateMap: handleUpdateMap,
+		showSuccessToast: handleShowSuccessToast,
+		showErrorToast: handleShowErrorToast,
+		hideLoadingOverlay: handleHideLoadingOverlay,
+		getApiKey: handleGetApiKey,
+		setApiKey: handleSetApiKey,
+		clearApiKey: handleClearApiKey,
+		getDefaultPrompt: handleGetDefaultPrompt,
+		setDefaultPrompt: handleSetDefaultPrompt,
+	}
+
+	const handler = handlers[request.action]
+	if (handler) {
+		handler(request, sender, sendResponse)
+	} else {
+		console.error(`Unknown action: ${request.action}`)
 	}
 })
+
+function handleUpdateMap(request, sender, sendResponse) {
+	showMappingToast()
+	renderMindmap(request.data || sampleMarkdown)
+		.then(() => {
+			showMapGeneratedToast()
+		})
+		.catch((error) => {
+			console.error("Error rendering mindmap:", error)
+			showTryAgainToast()
+		})
+}
+
+function handleShowSuccessToast(request, sender, sendResponse) {
+	showSuccessToast(request.message)
+}
+
+function handleShowErrorToast(request, sender, sendResponse) {
+	showErrorToast(request.message)
+}
+
+function handleHideLoadingOverlay(request, sender, sendResponse) {
+	hideLoadingOverlay()
+}
+
+function handleGetApiKey(request, sender, sendResponse) {
+	chrome.storage.local.get(["apiKey"], function (result) {
+		sendResponse({ apiKey: result.apiKey })
+	})
+	return true // Will respond asynchronously.
+}
+
+function handleSetApiKey(request, sender, sendResponse) {
+	chrome.storage.local.set({ apiKey: request.apiKey }, function () {
+		sendResponse({ success: true })
+	})
+	return true // Will respond asynchronously.
+}
+
+function handleClearApiKey(request, sender, sendResponse) {
+	chrome.storage.local.remove(["apiKey"], function () {
+		sendResponse({ success: true })
+	})
+	return true // Will respond asynchronously.
+}
+
+function handleGetDefaultPrompt(request, sender, sendResponse) {
+	chrome.storage.local.get(["defaultPrompt"], function (result) {
+		sendResponse({ defaultPrompt: result.defaultPrompt })
+	})
+	return true // Will respond asynchronously.
+}
+
+function handleSetDefaultPrompt(request, sender, sendResponse) {
+	chrome.storage.local.set(
+		{ defaultPrompt: request.defaultPrompt },
+		function () {
+			sendResponse({ success: true })
+		}
+	)
+	return true // Will respond asynchronously.
+}
 
 const options = {
 	duration: 500,
@@ -84,85 +119,106 @@ const options = {
 /* const { markmap } = window;
 const { Toolbar } = markmap; */
 
+/**
+ * Renders a mindmap from the given Markdown content.
+ * @param {string} markdown - The Markdown content to render.
+ * @returns {Promise<void>} - A promise that resolves when the mindmap is rendered.
+ */
 function renderMindmap(markdown) {
-	return new Promise((resolve) => {
-		if (log) console.log("rendering mindmap")
-		const mindmapContainer = document.getElementById("mindmap")
-		mindmapContainer.innerHTML = "" // Clear previous content
+	return new Promise((resolve, reject) => {
+		try {
+			if (log) console.log("rendering mindmap")
+			const mindmapContainer = document.getElementById("mindmap")
+			if (!mindmapContainer) {
+				throw new Error("Mindmap container not found")
+			}
+			mindmapContainer.innerHTML = "" // Clear previous content
 
-		// Create SVG element for markmap
-		const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-		svgEl.setAttribute("id", "mindmapContainer")
-		svgEl.setAttribute("style", "width: 750px; height: 500px;") // Adjust size as needed
-		mindmapContainer.appendChild(svgEl)
+			// Create SVG element for markmap
+			const svgEl = document.createElementNS(
+				"http://www.w3.org/2000/svg",
+				"svg"
+			)
+			svgEl.setAttribute("id", "mindmapContainer")
+			svgEl.setAttribute("style", "width: 750px; height: 500px;") // Adjust size as needed
+			mindmapContainer.appendChild(svgEl)
 
-		// Transform Markdown to Markmap data
-		const transformer = new Transformer(builtInPlugins)
-		const { root, features } = transformer.transform(markdown)
-		const assets = transformer.getUsedAssets(features)
+			// Transform Markdown to Markmap data
+			const transformer = new Transformer(builtInPlugins)
+			const { root, features } = transformer.transform(markdown)
+			const assets = transformer.getUsedAssets(features)
 
-		if (log) console.log(Toolbar)
+			if (log) console.log(Toolbar)
 
-		// Create markmap
-		let mm = Markmap.create(svgEl, options, root)
+			// Create markmap
+			let mm = Markmap.create(svgEl, options, root)
 
-		const { el } = Toolbar.create(mm)
+			const { el } = Toolbar.create(mm)
 
-		setupToolbar(el, mindmapContainer)
+			setupToolbar(el, mindmapContainer)
 
-		resolve()
+			resolve()
+		} catch (error) {
+			console.error("Error rendering mindmap:", error)
+			reject(error)
+		}
 	})
 }
 
+/**
+ * Enables or disables buttons based on the presence of an API key.
+ * @param {string} apiKey - The API key to check.
+ */
 function enableButtons(apiKey) {
-	const generateButton = document.getElementById("generateButton")
-	const downloadButton = document.getElementById("downloadButton")
-	const clearApiKeyButton = document.getElementById("clearApiKey")
-	const saveApiKeyButton = document.getElementById("saveApiKey")
-	const cancelApiKeyButton = document.getElementById("cancelApiKey")
+	const buttons = {
+		generateButton: document.getElementById("generateButton"),
+		downloadButton: document.getElementById("downloadButton"),
+		clearApiKeyButton: document.getElementById("clearApiKey"),
+		saveApiKeyButton: document.getElementById("saveApiKey"),
+		cancelApiKeyButton: document.getElementById("cancelApiKey"),
+	}
+
+	const enableButton = (button, enabled) => {
+		button.disabled = !enabled
+		button.style.backgroundColor = enabled ? "white" : "lightgrey"
+		button.style.color = enabled ? "black" : "grey"
+	}
 
 	if (apiKey) {
-		generateButton.disabled = false
-		downloadButton.disabled = false
-		clearApiKeyButton.disabled = false
-		generateButton.style.backgroundColor = "white"
-		downloadButton.style.backgroundColor = "white"
-		clearApiKeyButton.style.backgroundColor = "white"
-		generateButton.style.color = "black"
-		downloadButton.style.color = "black"
-		clearApiKeyButton.style.color = "black"
-		saveApiKeyButton.disabled = false
-		saveApiKeyButton.style.backgroundColor = "white"
-		saveApiKeyButton.style.color = "black"
-		cancelApiKeyButton.disabled = false
-		cancelApiKeyButton.style.backgroundColor = "white"
-		cancelApiKeyButton.style.color = "black"
+		enableButton(buttons.generateButton, true)
+		enableButton(buttons.downloadButton, true)
+		enableButton(buttons.clearApiKeyButton, true)
+		enableButton(buttons.saveApiKeyButton, true)
+		enableButton(buttons.cancelApiKeyButton, true)
 	} else {
-		generateButton.disabled = true
-		downloadButton.disabled = true
-		clearApiKeyButton.disabled = true
-		generateButton.style.backgroundColor = "lightgrey"
-		downloadButton.style.backgroundColor = "lightgrey"
-		clearApiKeyButton.style.backgroundColor = "lightgrey"
-		generateButton.style.color = "grey"
-		downloadButton.style.color = "grey"
-		clearApiKeyButton.style.color = "grey"
-		saveApiKeyButton.disabled = false
-		saveApiKeyButton.style.backgroundColor = "white"
-		saveApiKeyButton.style.color = "black"
-		cancelApiKeyButton.disabled = true
-		cancelApiKeyButton.style.backgroundColor = "lightgrey"
-		cancelApiKeyButton.style.color = "grey"
+		enableButton(buttons.generateButton, false)
+		enableButton(buttons.downloadButton, false)
+		enableButton(buttons.clearApiKeyButton, false)
+		enableButton(buttons.saveApiKeyButton, true)
+		enableButton(buttons.cancelApiKeyButton, false)
 	}
 }
 
 // Request summary if available immediately on popup open
 document.addEventListener("DOMContentLoaded", () => {
+	initializeApp()
+})
+
+/**
+ * Initializes the application by setting up event listeners and loading initial data.
+ */
+function initializeApp() {
+	loadInitialData()
+	setupEventListeners()
+}
+
+/**
+ * Loads initial data from local storage and sets up the UI.
+ */
+function loadInitialData() {
 	chrome.storage.local.get(["apiKey", "defaultPrompt"], function (result) {
 		apiKey_ = result.apiKey
-		defaultPrompt_ =
-			result.defaultPrompt ||
-			`You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse.  The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically, with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text`
+		defaultPrompt_ = result.defaultPrompt || getDefaultPrompt()
 		if (log) console.log("API Key loaded from local storage:", apiKey_)
 		if (log)
 			console.log("Default Prompt loaded from local storage:", defaultPrompt_)
@@ -171,208 +227,238 @@ document.addEventListener("DOMContentLoaded", () => {
 		enableButtons(apiKey_)
 
 		if (apiKey_ !== undefined && apiKey_ !== "") {
-			// If API key is already present, do not show the settings dialog
 			document.getElementById("apiKeyInputDialog").value = apiKey_
 			document.getElementById("defaultPromptInputDialog").value = defaultPrompt_
 			renderMindmap(sampleMarkdown)
 				.then(() => {
-					// hideLoading()
 					if (log) console.log("apiKey_:", apiKey_)
 				})
 				.catch((error) => {
 					console.error("Error rendering sample mindmap:", error)
-					// hideLoading() // Hide loading if there's an error
-				}) // Use sample if no summary available
+				})
 		} else {
 			openApiKeyDialog()
 		}
 	})
+}
 
+/**
+ * Sets up event listeners for various UI elements.
+ */
+function setupEventListeners() {
 	document
 		.getElementById("apiKeyInputDialog")
-		.addEventListener("change", () => {
-			const apiKey = document.getElementById("apiKeyInputDialog").value
-			chrome.runtime.sendMessage(
-				{ action: "setApiKey", apiKey: apiKey },
-				(response) => {
-					if (response && response.success) {
-						showSuccessToast("API Key updated successfully!")
-						updateApiKeyStatus(apiKey)
-						enableButtons(apiKey)
-					} else {
-						showErrorToast("Failed to update API Key.")
-					}
-				}
-			)
-		})
-
+		.addEventListener("change", handleApiKeyChange)
 	document
 		.getElementById("defaultPromptInputDialog")
-		.addEventListener("change", () => {
-			const defaultPrompt = document.getElementById(
-				"defaultPromptInputDialog"
-			).value
-			chrome.runtime.sendMessage(
-				{ action: "setDefaultPrompt", defaultPrompt: defaultPrompt },
-				(response) => {
-					if (response.success) {
-						showSuccessToast("Default Prompt updated successfully!")
-						updateDefaultPromptStatus(defaultPrompt)
-					} else {
-						showErrorToast("Failed to update Default Prompt.")
-					}
-				}
-			)
-		})
-
-	const settingsButton = document.getElementById("settingsButton")
-	if (settingsButton) {
-		settingsButton.addEventListener("click", openApiKeyDialog)
-	} else {
-		console.error("settingsButton not found!")
-	}
-	let isDarkMode = false
-	document.getElementById("modeButton").addEventListener("click", () => {
-		isDarkMode = !isDarkMode
-		document.body.classList.toggle("dark-mode", isDarkMode)
-		document.getElementById("modeButton").innerHTML = isDarkMode
-			? '<img src="icons/sun.svg" alt="Light Mode">'
-			: '<img src="icons/moon-star.svg" alt="Dark Mode">'
-		updateTheme()
-	})
-
+		.addEventListener("change", handleDefaultPromptChange)
+	document
+		.getElementById("settingsButton")
+		.addEventListener("click", openApiKeyDialog)
+	document
+		.getElementById("modeButton")
+		.addEventListener("click", toggleDarkMode)
 	document
 		.getElementById("generateButton")
-		.addEventListener("click", function () {
-			showMappingToast()
-			chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-				chrome.scripting.executeScript(
-					{
-						target: { tabId: tabs[0].id },
-						func: () => {
-							return document.body.innerText
-						},
-					},
-					(results) => {
-						if (chrome.runtime.lastError) {
-							console.error(chrome.runtime.lastError)
-							return
-						}
-						// showLoading()
-						chrome.runtime.sendMessage({
-							action: "getText",
-							data: results[0].result,
-						})
-					}
-				)
-			})
-		})
-
+		.addEventListener("click", handleGenerateButtonClick)
 	document
 		.getElementById("downloadButton")
-		.addEventListener("click", async function () {
-			const mindmap = document.getElementById("mindmapContainer") // Ensure this matches your SVG element's ID
-			const backgroundColor = isDarkMode ? "black" : "white"
-			const textColor = isDarkMode ? "white" : "black"
-			try {
-				const title = document.title // Get the page title
-				const dataUrl = await htmlToImage.toPng(mindmap, {
-					backgroundColor: backgroundColor,
-					width: mindmap.clientWidth,
-					height: mindmap.clientHeight,
-					pixelRatio: 5,
-					style: {
-						background: backgroundColor,
-						color: textColor,
-					},
-				})
-
-				// Create an anchor element to trigger the download
-				const link = document.createElement("a")
-				link.download = `${title}.png` // Rename using page title
-				link.href = dataUrl
-				// Append to the body, click it, then remove it
-				document.body.appendChild(link)
-				link.click()
-				document.body.removeChild(link)
-				showImageDownloadedToast()
-			} catch (error) {
-				console.error("Error while creating screenshot:", error)
-				alert(
-					"An error occurred while downloading the mindmap. Please try again."
-				)
-			}
-		})
-	document.getElementById("saveApiKey").addEventListener("click", () => {
-		const apiKey = document.getElementById("apiKeyInputDialog").value.trim()
-		if (!apiKey) {
-			showErrorToast("Please enter an API key!")
-			return
-		}
-		chrome.storage.local.set({ apiKey: apiKey }, function () {
-			showSuccessToast("API Key updated successfully!")
-			updateApiKeyStatus(apiKey)
-			apiKey_ = apiKey // Update apiKey_ here
-			closeApiKeyDialog()
-			renderMindmap(sampleMarkdown)
-				.then(() => {
-					showMapGeneratedToast()
-				})
-				.catch((error) => {
-					console.error("Error rendering mindmap:", error)
-					showTryAgainToast()
-				})
-		})
-	})
-	document.getElementById("clearApiKey").addEventListener("click", () => {
-		chrome.storage.local.remove(["apiKey"], function () {
-			showSuccessToast("API Key cleared successfully!")
-			updateApiKeyStatus("")
-			document.getElementById("apiKeyInputDialog").value = ""
-			apiKey_ = undefined
-			closeApiKeyDialog()
-			enableButtons(null)
-		})
-	})
+		.addEventListener("click", handleDownloadButtonClick)
+	document
+		.getElementById("saveApiKey")
+		.addEventListener("click", handleSaveApiKey)
+	document
+		.getElementById("clearApiKey")
+		.addEventListener("click", handleClearApiKey)
 	document
 		.getElementById("cancelApiKey")
 		.addEventListener("click", closeApiKeyDialog)
+	document
+		.getElementById("saveDefaultPrompt")
+		.addEventListener("click", handleSaveDefaultPrompt)
+	document.addEventListener("DOMContentLoaded", updateTheme)
+	document.getElementById("modeButton").addEventListener("click", updateTheme)
+}
 
-	document.getElementById("saveDefaultPrompt").addEventListener("click", () => {
-		const defaultPrompt = document
-			.getElementById("defaultPromptInputDialog")
-			.value.trim()
-		if (!defaultPrompt) {
-			showErrorToast("Please enter a default prompt!")
-			return
+/**
+ * Handles changes to the API key input.
+ */
+function handleApiKeyChange() {
+	const apiKey = document.getElementById("apiKeyInputDialog").value
+	chrome.runtime.sendMessage(
+		{ action: "setApiKey", apiKey: apiKey },
+		(response) => {
+			if (response && response.success) {
+				showSuccessToast("API Key updated successfully!")
+				updateApiKeyStatus(apiKey)
+				enableButtons(apiKey)
+			} else {
+				showErrorToast("Failed to update API Key.")
+			}
 		}
-		chrome.storage.local.set({ defaultPrompt: defaultPrompt }, function () {
-			showSuccessToast("Default Prompt updated successfully!")
-			updateDefaultPromptStatus(defaultPrompt)
-			defaultPrompt_ = defaultPrompt // Update defaultPrompt_ here
+	)
+}
+
+/**
+ * Handles changes to the default prompt input.
+ */
+function handleDefaultPromptChange() {
+	const defaultPrompt = document.getElementById(
+		"defaultPromptInputDialog"
+	).value
+	chrome.runtime.sendMessage(
+		{ action: "setDefaultPrompt", defaultPrompt: defaultPrompt },
+		(response) => {
+			if (response.success) {
+				showSuccessToast("Default Prompt updated successfully!")
+				updateDefaultPromptStatus(defaultPrompt)
+			} else {
+				showErrorToast("Failed to update Default Prompt.")
+			}
+		}
+	)
+}
+
+/**
+ * Toggles dark mode.
+ */
+function toggleDarkMode() {
+	let isDarkMode = !document.body.classList.contains("dark-mode")
+	document.body.classList.toggle("dark-mode", isDarkMode)
+	document.getElementById("modeButton").innerHTML = isDarkMode
+		? '<img src="icons/sun.svg" alt="Light Mode">'
+		: '<img src="icons/moon-star.svg" alt="Dark Mode">'
+	updateTheme()
+}
+
+/**
+ * Handles the generate button click event.
+ */
+function handleGenerateButtonClick() {
+	showMappingToast()
+	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+		chrome.scripting.executeScript(
+			{
+				target: { tabId: tabs[0].id },
+				func: () => {
+					return document.body.innerText
+				},
+			},
+			(results) => {
+				if (chrome.runtime.lastError) {
+					console.error(chrome.runtime.lastError)
+					return
+				}
+				chrome.runtime.sendMessage({
+					action: "getText",
+					data: results[0].result,
+				})
+			}
+		)
+	})
+}
+
+/**
+ * Handles the download button click event.
+ */
+async function handleDownloadButtonClick() {
+	const mindmap = document.getElementById("mindmapContainer")
+	const backgroundColor = document.body.classList.contains("dark-mode")
+		? "black"
+		: "white"
+	const textColor = document.body.classList.contains("dark-mode")
+		? "white"
+		: "black"
+	try {
+		const title = document.title
+		const dataUrl = await htmlToImage.toPng(mindmap, {
+			backgroundColor: backgroundColor,
+			width: mindmap.clientWidth,
+			height: mindmap.clientHeight,
+			pixelRatio: 5,
+			style: {
+				background: backgroundColor,
+				color: textColor,
+			},
 		})
-	})
 
-	// Load default prompt from local storage and set it in the textarea
-	chrome.storage.local.get(["defaultPrompt"], function (result) {
-		if (result.defaultPrompt !== undefined) {
-			document.getElementById("defaultPromptInputDialog").value =
-				result.defaultPrompt
-		} else {
-			document.getElementById("defaultPromptInputDialog").value =
-				defaultPrompt_ ||
-				"You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically,with emphasis of compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deen necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with #  • Discard any promotional content at the end promoting the author or any product or anything only sitck to the central theme of the text"
-		}
-	})
+		const link = document.createElement("a")
+		link.download = `${title}.png`
+		link.href = dataUrl
+		document.body.appendChild(link)
+		link.click()
+		document.body.removeChild(link)
+		showImageDownloadedToast()
+	} catch (error) {
+		console.error("Error while creating screenshot:", error)
+		alert("An error occurred while downloading the mindmap. Please try again.")
+	}
+}
 
-	document.addEventListener("DOMContentLoaded", () => {
-		updateTheme()
+/**
+ * Handles saving the API key.
+ */
+function handleSaveApiKey() {
+	const apiKey = document.getElementById("apiKeyInputDialog").value.trim()
+	if (!apiKey) {
+		showErrorToast("Please enter an API key!")
+		return
+	}
+	chrome.storage.local.set({ apiKey: apiKey }, function () {
+		showSuccessToast("API Key updated successfully!")
+		updateApiKeyStatus(apiKey)
+		apiKey_ = apiKey
+		closeApiKeyDialog()
+		renderMindmap(sampleMarkdown)
+			.then(() => {
+				showMapGeneratedToast()
+			})
+			.catch((error) => {
+				console.error("Error rendering mindmap:", error)
+				showTryAgainToast()
+			})
 	})
+}
 
-	document.getElementById("modeButton").addEventListener("click", () => {
-		updateTheme()
+/**
+ * Handles clearing the API key.
+ */
+function handleClearApiKey() {
+	chrome.storage.local.remove(["apiKey"], function () {
+		showSuccessToast("API Key cleared successfully!")
+		updateApiKeyStatus("")
+		document.getElementById("apiKeyInputDialog").value = ""
+		apiKey_ = undefined
+		closeApiKeyDialog()
+		enableButtons(null)
 	})
-})
+}
+
+/**
+ * Handles saving the default prompt.
+ */
+function handleSaveDefaultPrompt() {
+	const defaultPrompt = document
+		.getElementById("defaultPromptInputDialog")
+		.value.trim()
+	if (!defaultPrompt) {
+		showErrorToast("Please enter a default prompt!")
+		return
+	}
+	chrome.storage.local.set({ defaultPrompt: defaultPrompt }, function () {
+		showSuccessToast("Default Prompt updated successfully!")
+		updateDefaultPromptStatus(defaultPrompt)
+		defaultPrompt_ = defaultPrompt
+	})
+}
+
+/**
+ * Returns the default prompt text.
+ * @returns {string} The default prompt text.
+ */
+function getDefaultPrompt() {
+	return `You are an expert in creating clear, structured, and visually intuitive mindmaps in Markdown format. Given the following text input, your goal is to extract all the core ideas and details to create a mindmap that is neither too detailed nor too sparse. The mindmap must highlight the main topics, subtopics, and supporting points in a hierarchical structure. • Organize the content logically, with emphasis on compactness and extracting the essential points. • Use concise phrases and bullet points for clarity. • Make the mindmaps very compact and on point. • Always ensure the Markdown format is accurate and clean, making it easy to read and render. • Use appropriate indentation to show relationships between main topics and subtopics. • Create a compact title for the mindmap, ideally no longer than 10 words. • Use #, ## and ### for main branches and use - to indent further sub branches • Use bold and italic text as you deem necessary • Feel free to judge the amount of details to include given the detail to be included is absolutely essential and is useful • Always[IMPORTANT] make sure there's a root title that's marked with # • Discard any promotional content at the end promoting the author or any product or anything only stick to the central theme of the text`
+}
 
 // Helper function to style and append the toolbar
 function setupToolbar(el, container) {
