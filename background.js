@@ -5,6 +5,10 @@ chrome.runtime.onInstalled.addListener(() => {
 	loadSettingsFromStorage()
 })
 
+chrome.runtime.onStartup.addListener(() => {
+	loadSettingsFromStorage()
+})
+
 function loadSettingsFromStorage() {
 	chrome.storage.local.get(["apiKey", "defaultPrompt"], (result) => {
 		apiKey = result.apiKey || ""
@@ -76,6 +80,11 @@ async function fetchSummary(text) {
 			"API Key is not set. Please set your API key in the options."
 		)
 		throw new Error("Something went wrong, please try again, =)")
+	}
+
+	if (!apiKey) {
+		showErrorToast("API Key is not loaded. Please try again later.")
+		throw new Error("API Key is not loaded. Please try again later.")
 	}
 
 	// Here we use the Gemini API endpoint to generate a summary.
