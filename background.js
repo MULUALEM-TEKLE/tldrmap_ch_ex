@@ -97,37 +97,51 @@ async function fetchSummary(text) {
 	// Here we use the Gemini API endpoint to generate a summary.
 	const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
 
-	const response = await fetchWithTimeout(endpoint, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-			contents: [
-				{
-					parts: [
+	let retries = 3
+	while (retries > 0) {
+		try {
+			const response = await fetchWithTimeout(endpoint, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					contents: [
 						{
-							text: `Summarize the following text in markdown format for use in a mind map, here's the structure you should follow : ${defaultPrompt} and here's the text you have to map:\n\n${text}`,
+							parts: [
+								{
+									text: `Summarize the following text in markdown format for use in a mind map, here's the structure you should follow : ${defaultPrompt} and here's the text you have to map:\n\n${text}`,
+								},
+							],
 						},
 					],
-				},
-			],
-		}),
-		timeout: 10000, // 10 seconds timeout
-	})
+				}),
+				timeout: 10000, // 10 seconds timeout
+			})
 
-	// Check if the response was successful
-	if (!response.ok) {
-		const errorText = await response.text() // Get error message from body
-		console.error("Gemini API Error:", errorText)
-		showErrorToast(`Gemini API Error: ${response.status} - ${errorText}`) // Show error to user
-		throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
+			// Check if the response was successful
+			if (!response.ok) {
+				const errorText = await response.text() // Get error message from body
+				console.error("Gemini API Error:", errorText)
+				showErrorToast(`Gemini API Error: ${response.status} - ${errorText}`) // Show error to user
+				throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
+			}
+
+			const data = await response.json()
+
+			// Gemini API response format might differ, here we assume it returns text in a certain structure
+			return data.candidates[0].content.parts[0].text // Adjust based on actual response structure
+		} catch (error) {
+			retries--
+			if (retries === 0) {
+				throw error
+			}
+			console.warn(`Retrying... Attempts left: ${retries}`)
+			showErrorToast(
+				`Internal error occurred. Retrying... Attempts left: ${retries}`
+			)
+		}
 	}
-
-	const data = await response.json()
-
-	// Gemini API response format might differ, here we assume it returns text in a certain structure
-	return data.candidates[0].content.parts[0].text // Adjust based on actual response structure
 }
 
 async function fetchWithTimeout(resource, options = {}) {
