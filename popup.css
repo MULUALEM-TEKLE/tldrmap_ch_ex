@@ -1,5 +1,10 @@
 * {
 	transition: color 0.3s ease, background-color 0.3s ease; /* Added transition for smoother theme changes */
+	font-family: monospace;
+}
+
+textarea {
+	font-family: monospace;
 }
 
 body,
