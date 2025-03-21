@@ -1,6 +1,32 @@
+:root {
+	/* NeoBrutalism Design System */
+	--border-thickness: 2px;
+	--shadow-offset: 5px;
+
+	/* Light Theme */
+	--neo-primary: #ffffff;
+	--neo-secondary: #000000;
+	--neo-accent: #00c853;
+	--neo-border-light: #e0e0e0;
+	--neo-destructive: #ff5252;
+	--neo-neutral: #616161;
+	--neo-shadow: #00000033;
+
+	/* Dark Theme */
+	--neo-dark-primary: #1a1a1a;
+	--neo-dark-secondary: #ffffff;
+	--neo-dark-accent: #00c853;
+	--neo-border-dark: #616161;
+	--neo-dark-destructive: #ff5252;
+	--neo-dark-neutral: #9e9e9e;
+	--neo-dark-shadow: #ffffff33;
+}
+
 * {
-	transition: color 0.3s ease, background-color 0.3s ease; /* Added transition for smoother theme changes */
+	transition: color 0.3s ease, background-color 0.3s ease, border 0.3s ease;
 	font-family: monospace;
+	box-sizing: border-box;
+	border-radius: 5px;
 }
 
 textarea {
@@ -9,7 +35,11 @@ textarea {
 
 body,
 #mindmap {
-	background-color: linear-gradient(90deg, #e3ffe7 0%, #d9e7ff 100%);
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	border: none;
+	box-shadow: none;
 }
 
 .mm-toolbar {
@@ -17,9 +47,14 @@ body,
 }
 
 body {
-	border-radius: 1rem;
-	height: 500px;
-	width: 700px;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	/* border-radius: 1rem; */
+	/* height: 500px; */
+	/* width: 700px; */
 }
 
 #generateButton,
@@ -29,11 +64,21 @@ body {
 #clearApiKey,
 #cancelApiKey,
 #saveDefaultPrompt {
-	color: black;
-	background-color: white;
-	border-radius: 5px;
-	padding: 5px;
+	background-color: var(--neo-neutral);
+	color: var(--neo-secondary);
+	color: var(--neo-secondary);
+	background: var(--neo-primary);
+	border: var(--border-thickness) solid var(--neo-border-light);
+	padding: 12px 24px;
 	cursor: pointer;
+	box-shadow: calc(var(--shadow-offset) / 2) calc(var(--shadow-offset) / 2) 0 0
+		var(--neo-shadow);
+	transition: all 0.2s ease;
+}
+
+button:hover {
+	transform: translate(2px, 2px);
+	box-shadow: 2px 2px 0 0 var(--neo-secondary);
 }
 
 .dark-mode #generateButton,
@@ -41,19 +86,23 @@ body {
 .dark-mode #settingsButton,
 .dark-mode #saveApiKey,
 .dark-mode #clearApiKey,
-.dark-mode #cancelApiKey,
 .dark-mode #saveDefaultPrompt {
+	background-color: var(--neo-dark-neutral);
+	color: var(--neo-dark-secondary);
 	background-color: white;
 	color: black;
-	border: 1px solid #ddd; /* Lighter border in dark mode */
+	border: var(--border-thickness) solid var(--neo-border-dark);
 }
 
 #generateButton:disabled,
 #downloadButton:disabled,
 #apiKeyDialog button:disabled {
-	background-color: lightgrey;
+	background-color: var(--neo-shadow);
 	cursor: not-allowed;
-	color: grey;
+	color: var(--neo-secondary);
+	opacity: 0.5;
+	transform: none;
+	box-shadow: none;
 }
 
 #generateButton:disabled:hover,
@@ -96,8 +145,16 @@ body {
 }
 
 .dark-mode {
-	background-color: #333; /* Dark background */
-	color: white;
+	background-color: var(--neo-dark-primary);
+	color: var(--neo-dark-secondary);
+	border-color: var(--neo-dark-secondary);
+	box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0
+		var(--neo-dark-shadow);
+
+	--neo-primary: var(--neo-dark-primary);
+	--neo-secondary: var(--neo-dark-secondary);
+	--neo-accent: var(--neo-dark-accent);
+	--neo-shadow: var(--neo-dark-shadow);
 }
 
 .dark-mode * {
@@ -110,65 +167,109 @@ body {
 	height: fit-content;
 	gap: 10px;
 	position: fixed;
-	bottom: 0;
-	margin: 5px;
+	bottom: 1%;
+	left: 1%;
+	/* margin: 5px; */
 }
 
 #apiKeyDialog {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
+	align-items: stretch;
 	position: fixed;
-	background-color: white;
+	background: var(--neo-primary);
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	padding: 20px;
-	border-radius: 5px;
-	box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+	padding: 2.5rem;
+	border: var(--border-thickness) solid var(--neo-secondary);
+	box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0 var(--neo-shadow);
 	z-index: 1001;
+	max-width: 90vw;
+	width: 450px;
+	gap: 1.5rem;
+	border-radius: 12px;
 }
 
 #apiKeyDialog input,
 #apiKeyDialog textarea {
-	width: 300px;
-	padding: 10px;
-	margin-bottom: 10px;
-	border: 1px solid #ccc;
-	border-radius: 5px;
+	width: 100%;
+	padding: 0.75rem 1rem;
+	border: var(--border-thickness) solid var(--neo-secondary);
+	border-radius: 8px;
+	font-size: 1rem;
+	background: var(--neo-primary);
+	color: var(--neo-secondary);
+	transition: all 0.2s ease;
+}
+
+#apiKeyDialog input:focus,
+#apiKeyDialog textarea:focus {
+	outline: none;
+	box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0 var(--neo-shadow);
+	transform: translate(-2px, -2px);
 }
 
 #apiKeyDialog button {
-	padding: 10px;
-	margin: 5px;
-	border: 1px solid #ccc;
-	border-radius: 5px;
+	padding: 0.75rem 1.5rem;
+	margin: 0.5rem;
+	border: var(--border-thickness) solid var(--neo-secondary);
+	border-radius: 8px;
 	cursor: pointer;
+	background: var(--neo-primary);
+	color: var(--neo-secondary);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	transition: all 0.2s ease;
+}
+
+#apiKeyDialog .button-group {
+	display: flex;
+	justify-content: center;
+	gap: 1rem;
+	margin-top: 1rem;
 }
 
 #apiKeyDialog .cancel-button {
-	padding: 5px;
-	margin: 5px;
+	padding: 0.5rem;
 	border: 1px solid red;
-	border-radius: 5px;
+	border-radius: 50%;
 	cursor: pointer;
 	position: absolute;
-	top: -20px;
-	left: -20px;
+	top: -1.5rem;
+	right: -1.5rem;
+	background: var(--neo-primary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+}
+
+#apiKeyDialog .cancel-button:hover {
+	background: var(--neo-accent);
+	transform: rotate(90deg);
 }
 
 #apiKeyDialog button:disabled {
-	background-color: lightgrey;
+	background-color: var(--neo-shadow);
 	cursor: not-allowed;
-	color: grey;
+	color: var(--neo-secondary);
+	opacity: 0.5;
+	transform: none;
+	box-shadow: none;
 }
 
 #apiKeyDialog button:disabled:hover {
 	cursor: not-allowed;
 }
 
-#apiKeyDialog #apiKeyStatus {
-	margin-bottom: 10px;
+#apiKeyDialog #apiKeyStatus,
+#apiKeyDialog #defaultPromptStatus {
+	margin: 0.5rem 0;
+	font-size: 0.9rem;
+	color: var(--neo-accent);
 }
 
 body.apiKeyDialogOpen {
@@ -182,9 +283,9 @@ body.apiKeyDialogOpen {
 
 .dark-mode #apiKeyDialog input,
 .dark-mode #apiKeyDialog textarea {
-	background-color: #333;
-	color: white;
-	border: 1px solid white;
+	background-color: var(--neo-dark-primary);
+	color: var(--neo-dark-secondary);
+	border: var(--border-thickness) solid var(--neo-dark-secondary);
 }
 
 /* .dark-mode #apiKeyDialog button {

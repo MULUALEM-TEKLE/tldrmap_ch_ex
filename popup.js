@@ -63,42 +63,145 @@ function handleHideLoadingOverlay(request, sender, sendResponse) {
 	hideLoadingOverlay()
 }
 
-function handleGetApiKey(request, sender, sendResponse) {
-	chrome.storage.local.get(["apiKey"], function (result) {
-		sendResponse({ apiKey: result.apiKey })
+/**
+ * Handles API key related storage operations.
+ * @param {string} operation - The operation to perform ('get', 'set', or 'clear')
+ * @param {string} [value] - The value to set (only for 'set' operation)
+ * @returns {Promise<any>} A promise that resolves with the operation result
+ */
+function handleApiKeyStorage(operation, value = null) {
+	return new Promise((resolve, reject) => {
+		try {
+			switch (operation) {
+				case "get":
+					chrome.storage.local.get(["apiKey"], (result) => {
+						if (chrome.runtime.lastError) {
+							reject(chrome.runtime.lastError)
+						} else {
+							resolve(result.apiKey)
+						}
+					})
+					break
+				case "set":
+					if (!value) {
+						reject(new Error("Value is required for set operation"))
+						return
+					}
+					chrome.storage.local.set({ apiKey: value }, () => {
+						if (chrome.runtime.lastError) {
+							reject(chrome.runtime.lastError)
+						} else {
+							resolve(true)
+						}
+					})
+					break
+				case "clear":
+					chrome.storage.local.remove(["apiKey"], () => {
+						if (chrome.runtime.lastError) {
+							reject(chrome.runtime.lastError)
+						} else {
+							resolve(true)
+						}
+					})
+					break
+				default:
+					reject(new Error("Invalid operation"))
+			}
+		} catch (error) {
+			reject(error)
+		}
 	})
-	return true // Will respond asynchronously.
+}
+
+function handleGetApiKey(request, sender, sendResponse) {
+	handleApiKeyStorage("get")
+		.then((apiKey) => sendResponse({ apiKey }))
+		.catch((error) => {
+			console.error("Error getting API key:", error)
+			sendResponse({ error: error.message })
+		})
+	return true
 }
 
 function handleSetApiKey(request, sender, sendResponse) {
-	chrome.storage.local.set({ apiKey: request.apiKey }, function () {
-		sendResponse({ success: true })
-	})
-	return true // Will respond asynchronously.
+	handleApiKeyStorage("set", request.apiKey)
+		.then(() => sendResponse({ success: true }))
+		.catch((error) => {
+			console.error("Error setting API key:", error)
+			sendResponse({ error: error.message })
+		})
+	return true
 }
 
 function handleClearApiKey(request, sender, sendResponse) {
-	chrome.storage.local.remove(["apiKey"], function () {
-		sendResponse({ success: true })
+	handleApiKeyStorage("clear")
+		.then(() => sendResponse({ success: true }))
+		.catch((error) => {
+			console.error("Error clearing API key:", error)
+			sendResponse({ error: error.message })
+		})
+	return true
+}
+
+/**
+ * Handles default prompt related storage operations.
+ * @param {string} operation - The operation to perform ('get' or 'set')
+ * @param {string} [value] - The value to set (only for 'set' operation)
+ * @returns {Promise<any>} A promise that resolves with the operation result
+ */
+function handleDefaultPromptStorage(operation, value = null) {
+	return new Promise((resolve, reject) => {
+		try {
+			switch (operation) {
+				case "get":
+					chrome.storage.local.get(["defaultPrompt"], (result) => {
+						if (chrome.runtime.lastError) {
+							reject(chrome.runtime.lastError)
+						} else {
+							resolve(result.defaultPrompt || getDefaultPrompt())
+						}
+					})
+					break
+				case "set":
+					if (!value) {
+						reject(new Error("Value is required for set operation"))
+						return
+					}
+					chrome.storage.local.set({ defaultPrompt: value }, () => {
+						if (chrome.runtime.lastError) {
+							reject(chrome.runtime.lastError)
+						} else {
+							resolve(true)
+						}
+					})
+					break
+				default:
+					reject(new Error("Invalid operation"))
+			}
+		} catch (error) {
+			reject(error)
+		}
 	})
-	return true // Will respond asynchronously.
 }
 
 function handleGetDefaultPrompt(request, sender, sendResponse) {
-	chrome.storage.local.get(["defaultPrompt"], function (result) {
-		sendResponse({ defaultPrompt: result.defaultPrompt })
-	})
-	return true // Will respond asynchronously.
+	handleDefaultPromptStorage("get")
+		.then((defaultPrompt) => sendResponse({ defaultPrompt }))
+		.catch((error) => {
+			console.error("Error getting default prompt:", error)
+			sendResponse({ error: error.message })
+		})
+	return true
 }
 
 function handleSetDefaultPrompt(request, sender, sendResponse) {
-	chrome.storage.local.set(
-		{ defaultPrompt: request.defaultPrompt },
-		function () {
-			sendResponse({ success: true })
-		}
-	)
-	return true // Will respond asynchronously.
+	handleDefaultPromptStorage("set", request.defaultPrompt)
+		.then(() => sendResponse({ success: true }))
+		.catch((error) => {
+			console.error("Error setting default prompt:", error)
+			sendResponse({ error: error.message })
+		})
+	return true
 }
 
 const options = {
@@ -109,8 +212,8 @@ const options = {
 	pan: true,
 	spacingHorizontal: 80,
 	spacingVertical: 20,
-	fitRatio: 0.9,
-	maxInitialScale: 1.25,
+	fitRatio: 0.8,
+	maxInitialScale: 1.125,
 	nodeMinHeight: 16,
 	paddingX: 5,
 	paddingY: 5,
@@ -490,13 +593,21 @@ function setupToolbar(el, container) {
 	if (log) console.log("added toolbar")
 }
 
-function showLoadingOverlay() {
-	document.getElementById("loadingOverlay").style.display = "flex"
+/**
+ * Shows or hides the loading overlay.
+ * @param {boolean} show - Whether to show or hide the overlay
+ */
+function toggleLoadingOverlay(show) {
+	const overlay = document.getElementById("loadingOverlay")
+	if (!overlay) {
+		console.error("Loading overlay element not found")
+		return
+	}
+	overlay.style.display = show ? "flex" : "none"
 }
 
-function hideLoadingOverlay() {
-	document.getElementById("loadingOverlay").style.display = "none"
-}
+const showLoadingOverlay = () => toggleLoadingOverlay(true)
+const hideLoadingOverlay = () => toggleLoadingOverlay(false)
 
 function showMappingToast() {
 	showLoadingOverlay()
