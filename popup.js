@@ -243,7 +243,7 @@ function renderMindmap(markdown) {
 				"svg"
 			)
 			svgEl.setAttribute("id", "mindmapContainer")
-			svgEl.setAttribute("style", "width: 750px; height: 500px;") // Adjust size as needed
+			svgEl.setAttribute("style", "width: 750px; height: 400px;") // Adjust size as needed
 			mindmapContainer.appendChild(svgEl)
 
 			// Transform Markdown to Markmap data
