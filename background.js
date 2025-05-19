@@ -100,6 +100,19 @@ async function handleGetText(request) {
 }
 
 // Fetch summary with retry mechanism
+// Function to decode HTML entities using pure JavaScript
+function decodeHTMLEntities(text) {
+	const entities = {
+		"&amp;": "&",
+		"&lt;": "<",
+		"&gt;": ">",
+		"&quot;": '"',
+		"&#39;": "'",
+		"&nbsp;": " ",
+	}
+	return text.replace(/&[#\w]+;/g, (entity) => entities[entity] || entity)
+}
+
 async function fetchSummary(text) {
 	let attempt = 0
 	while (attempt < MAX_RETRIES) {
@@ -130,7 +143,8 @@ async function fetchSummary(text) {
 			}
 
 			const data = await response.json()
-			return data.candidates[0].content.parts[0].text
+			// Decode HTML entities in the response text
+			return decodeHTMLEntities(data.candidates[0].content.parts[0].text)
 		} catch (error) {
 			attempt++
 			if (attempt === MAX_RETRIES) throw error

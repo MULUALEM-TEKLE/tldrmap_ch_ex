@@ -1,6 +1,6 @@
 {
 	"name": "tldr.map",
-	"version": "0.0.0.2",
+	"version": "0.0.0.3",
 	"manifest_version": 3,
 	"description": "The tldr.map Extension is a Chrome extension designed to help users create visual mind maps from web pages.",
 	"action": {
