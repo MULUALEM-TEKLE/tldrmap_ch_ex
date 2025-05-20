@@ -12,6 +12,31 @@
 	--neo-neutral: #616161;
 	--neo-shadow: #00000033;
 
+	/* Markmap specific variables for light theme */
+	--markmap-text-color: var(--neo-destructive);
+	--markmap-a-color: var(--neo-accent);
+	--markmap-line-color: var(--neo-secondary);
+	--markmap-circle-open-bg: var(--neo-primary);
+	--markmap-circle-closed-bg: var(
+		--neo-secondary
+	); /* Example for closed state */
+
+	/* Transparent backgrounds for overlays */
+	--neo-primary-transparent: rgba(255, 255, 255, 0.8);
+	--neo-dark-primary-transparent: rgba(
+		26,
+		26,
+		26,
+		0.8
+	); /* Corresponds to #1a1a1a */
+}
+
+.dark-mode {
+	background-color: var(--neo-dark-primary);
+	color: var(--neo-dark-secondary);
+	/* border-color: var(--neo-dark-secondary); Should be applied to specific elements, not body */
+	/* box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0 var(--neo-dark-shadow); Should be applied to specific elements */
+
 	/* Dark Theme */
 	--neo-dark-primary: #1a1a1a;
 	--neo-dark-secondary: #ffffff;
@@ -21,16 +46,15 @@
 	--neo-dark-neutral: #9e9e9e;
 	--neo-dark-shadow: #ffffff33;
 
-	/* Markmap specific variables for light theme */
-	--markmap-text-color: var(--neo-secondary);
-	--markmap-a-color: var(--neo-accent);
-	--markmap-line-color: var(--neo-neutral);
-	--markmap-circle-open-bg: var(--neo-primary);
-	--markmap-circle-closed-bg: var(--neo-secondary); /* Example for closed state */
+	/* Markmap specific variables for dark theme */
+	--markmap-text-color: var(--neo-dark-secondary);
+	--markmap-a-color: var(--neo-dark-accent);
+	--markmap-line-color: var(--neo-dark-secondary);
+	--markmap-circle-open-bg: var(--neo-dark-primary);
+	--markmap-circle-closed-bg: var(--neo-dark-secondary);
 
-    /* Transparent backgrounds for overlays */
-    --neo-primary-transparent: rgba(255, 255, 255, 0.8);
-    --neo-dark-primary-transparent: rgba(26, 26, 26, 0.8); /* Corresponds to #1a1a1a */
+	/* Transparent backgrounds for overlays */
+	--neo-primary-transparent: var(--neo-dark-primary-transparent);
 }
 
 body {
@@ -43,11 +67,15 @@ body {
 	color: var(--neo-dark-secondary);
 }
 
-#mindmap, #mindmapContainer {
-	background-color: var(--neo-primary); /* Or transparent if body bg should show */
+#mindmap,
+#mindmapContainer {
+	background-color: var(
+		--neo-primary
+	); /* Or transparent if body bg should show */
 }
 
-.dark-mode #mindmap, .dark-mode #mindmapContainer {
+.dark-mode #mindmap,
+.dark-mode #mindmapContainer {
 	background-color: var(--neo-dark-primary); /* Or transparent */
 }
 
@@ -55,6 +83,7 @@ body {
 a {
 	color: var(--neo-accent);
 }
+
 .dark-mode a {
 	color: var(--neo-dark-accent);
 }
@@ -62,6 +91,10 @@ a {
 /* Styles for Markmap SVG elements */
 .markmap-node text {
 	fill: var(--markmap-text-color);
+}
+
+.dark-mode .markmap-node text {
+	fill: var(--neo-dark-secondary);
 }
 
 .markmap-node a {
@@ -88,7 +121,6 @@ a {
 
 /* No need for duplicated .dark-mode rules for markmap elements if variables are correctly updated by .dark-mode context */
 /* The variables --markmap-text-color etc. will change in .dark-mode context */
-
 
 * {
 	transition: color 0.3s ease, background-color 0.3s ease, border 0.3s ease;
@@ -122,12 +154,11 @@ body, #mindmapContainer /* Ensure #mindmapContainer is covered if it's the actua
 	fill: var(--neo-dark-secondary);
 }
 
-
 /* body specific styles were moved up to ensure they are applied first */
 /* body {
 	margin: 0;
 	padding: 0;
-	background: black; 
+	background: black;
 	border: none;
 	box-shadow: none;
 	border-radius: 0;
@@ -177,9 +208,10 @@ button:hover {
 .dark-mode #saveApiKey,
 .dark-mode #clearApiKey,
 .dark-mode #saveDefaultPrompt {
-    color: var(--neo-dark-secondary); /* Ensure text is light on dark background */
+	color: var(
+		--neo-dark-secondary
+	); /* Ensure text is light on dark background */
 }
-
 
 #generateButton:disabled,
 #downloadButton:disabled,
@@ -227,35 +259,9 @@ button:hover {
 	color: var(--icon-color-dark); /* Golden color in dark mode */
 }
 
-.dark-mode {
-	background-color: var(--neo-dark-primary);
-	color: var(--neo-dark-secondary);
-	/* border-color: var(--neo-dark-secondary); Should be applied to specific elements, not body */
-	/* box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0 var(--neo-dark-shadow); Should be applied to specific elements */
-
-	/* Redefine NeoBrutalism variables for dark mode context */
-	--neo-primary: var(--neo-dark-primary);
-	--neo-secondary: var(--neo-dark-secondary);
-	--neo-accent: var(--neo-dark-accent);
-	--neo-border-light: var(--neo-border-dark); /* Important: map light border to dark border var */
-	--neo-destructive: var(--neo-dark-destructive);
-	--neo-neutral: var(--neo-dark-neutral);
-	--neo-shadow: var(--neo-dark-shadow);
-
-	/* Markmap specific variables for dark theme */
-	--markmap-text-color: var(--neo-dark-secondary);
-	--markmap-a-color: var(--neo-dark-accent);
-	--markmap-line-color: var(--neo-dark-neutral);
-	--markmap-circle-open-bg: var(--neo-dark-primary);
-	--markmap-circle-closed-bg: var(--neo-dark-secondary);
-
-    /* Transparent backgrounds for overlays */
-    --neo-primary-transparent: var(--neo-dark-primary-transparent);
-}
-
 /* .dark-mode * {
 	color: white;
-} */ /* This was correctly commented out previously */
+} */
 
 .buttons-container {
 	display: flex;
@@ -375,7 +381,7 @@ body.apiKeyDialogOpen {
 .dark-mode #apiKeyDialog {
 	background-color: var(--neo-dark-primary); /* Use variable */
 	color: var(--neo-dark-secondary); /* Use variable */
-    border: var(--border-thickness) solid var(--neo-dark-secondary); /* Add border for consistency */
+	border: var(--border-thickness) solid var(--neo-dark-secondary); /* Add border for consistency */
 }
 
 .dark-mode #apiKeyDialog input,
@@ -392,13 +398,13 @@ body.apiKeyDialogOpen {
 }
 
 .dark-mode #apiKeyDialog button:hover {
-    background-color: var(--neo-dark-accent); /* Or a slightly different shade */
-    color: var(--neo-dark-primary); /* Text color on hover */
+	background-color: var(--neo-dark-accent); /* Or a slightly different shade */
+	color: var(--neo-dark-primary); /* Text color on hover */
 }
 
 .dark-mode #apiKeyDialog .cancel-button {
-    background: var(--neo-dark-primary);
-    border: 1px solid var(--neo-dark-destructive); /* Use destructive color for cancel */
+	background: var(--neo-dark-primary);
+	border: 1px solid var(--neo-dark-destructive); /* Use destructive color for cancel */
 }
 .dark-mode #apiKeyDialog .cancel-button:hover {
 	background: var(--neo-dark-destructive);
@@ -407,7 +413,9 @@ body.apiKeyDialogOpen {
 
 .dark-mode #apiKeyDialog #apiKeyStatus,
 .dark-mode #apiKeyDialog #defaultPromptStatus {
-	color: var(--neo-dark-accent); /* Ensure status text uses accent color in dark mode */
+	color: var(
+		--neo-dark-accent
+	); /* Ensure status text uses accent color in dark mode */
 }
 
 /* Removed .dark-mode #loadingIndicator as #loadingIndicator does not exist */
@@ -418,7 +426,9 @@ body.apiKeyDialogOpen {
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: var(--neo-primary-transparent); /* Use a variable for transparency */
+	background: var(
+		--neo-primary-transparent
+	); /* Use a variable for transparency */
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -426,9 +436,10 @@ body.apiKeyDialogOpen {
 	display: none; /* Initially hidden */
 }
 .dark-mode #loadingOverlay {
-	background: var(--neo-dark-primary-transparent); /* Dark mode transparent background */
+	background: var(
+		--neo-dark-primary-transparent
+	); /* Dark mode transparent background */
 }
-
 
 #loadingOverlay .spinner {
 	border: 16px solid var(--neo-shadow); /* Use shadow or a light grey for spinner track */

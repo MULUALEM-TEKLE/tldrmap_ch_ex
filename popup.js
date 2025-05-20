@@ -259,7 +259,7 @@ function renderMindmap(markdown) {
 			markdown = markdown.replace(/&amp;/g, "&")
 			markdown = markdown.replace(/&lt;/g, "<")
 			markdown = markdown.replace(/&gt;/g, ">")
-			markdown = markdown.replace(/&quot;/g, "\"")
+			markdown = markdown.replace(/&quot;/g, '"')
 			markdown = markdown.replace(/&#39;/g, "'")
 			markdown = markdown.replace(/&apos;/g, "'")
 			markdown = markdown.replace(/&#x2F;/g, "/")
@@ -331,7 +331,17 @@ document.addEventListener("DOMContentLoaded", () => {
  * Initializes the application by setting up event listeners and loading initial data.
  */
 function initializeApp() {
-	toggleDarkMode()
+	// Load theme preference from local storage
+	chrome.storage.local.get(["isDarkMode"], (result) => {
+		const isDarkMode =
+			result.isDarkMode === undefined ? false : result.isDarkMode // Default to light mode if not set
+		document.body.classList.toggle("dark-mode", isDarkMode)
+		document.getElementById("modeButton").innerHTML = isDarkMode
+			? '<img src="icons/sun.svg" alt="Light Mode">'
+			: '<img src="icons/moon-star.svg" alt="Dark Mode">'
+		updateTheme()
+	})
+
 	loadInitialData()
 	setupEventListeners()
 }
@@ -454,6 +464,16 @@ function toggleDarkMode() {
 	document.getElementById("modeButton").innerHTML = isDarkMode
 		? '<img src="icons/sun.svg" alt="Light Mode">'
 		: '<img src="icons/moon-star.svg" alt="Dark Mode">'
+
+	// Save theme preference to local storage
+	chrome.storage.local.set({ isDarkMode: isDarkMode }, () => {
+		if (chrome.runtime.lastError) {
+			console.error("Error saving theme preference:", chrome.runtime.lastError)
+		} else {
+			if (log) console.log("Theme preference saved:", isDarkMode)
+		}
+	})
+
 	updateTheme()
 }
 
