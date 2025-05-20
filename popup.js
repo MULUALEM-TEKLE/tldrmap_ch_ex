@@ -217,6 +217,15 @@ const options = {
 	nodeMinHeight: 16,
 	paddingX: 5,
 	paddingY: 5,
+	color: (node) => {
+		// For the fill of a folded (collapsed) node's circle
+		if (node.payload?.fold && node.children?.length) {
+			return "var(--markmap-circle-closed-bg)"
+		}
+		// For the stroke of connector lines and circle borders
+		// Note: The fill of an open circle is handled by --markmap-circle-open-bg in CSS
+		return "var(--markmap-line-color)"
+	},
 }
 
 /* const { markmap } = window;
@@ -245,6 +254,17 @@ function renderMindmap(markdown) {
 			svgEl.setAttribute("id", "mindmapContainer")
 			svgEl.setAttribute("style", "width: 750px; height: 400px;") // Adjust size as needed
 			mindmapContainer.appendChild(svgEl)
+
+			// Decode HTML entities
+			markdown = markdown.replace(/&amp;/g, "&")
+			markdown = markdown.replace(/&lt;/g, "<")
+			markdown = markdown.replace(/&gt;/g, ">")
+			markdown = markdown.replace(/&quot;/g, "\"")
+			markdown = markdown.replace(/&#39;/g, "'")
+			markdown = markdown.replace(/&apos;/g, "'")
+			markdown = markdown.replace(/&#x2F;/g, "/")
+			markdown = markdown.replace(/&#x60;/g, "`")
+			markdown = markdown.replace(/&#x3D;/g, "=")
 
 			// Transform Markdown to Markmap data
 			const transformer = new Transformer(builtInPlugins)
@@ -641,7 +661,7 @@ function showCustomToast(message, backgroundColor) {
 function updateTheme() {
 	const isDarkMode = document.body.classList.contains("dark-mode")
 	const elementsToStyle = document.querySelectorAll(
-		"body, #mindmap, .mm-toolbar, #generateButton, #downloadButton, #settingsButton, #saveApiKey, #clearApiKey, #cancelApiKey, #saveDefaultPrompt, #apiKeyDialog, #apiKeyDialog input, #apiKeyDialog textarea, #apiKeyDialog button, #loadingIndicator"
+		"body, #mindmap, #mindmapContainer, #toolbar, #generateButton, #downloadButton, #settingsButton, #saveApiKey, #clearApiKey, #cancelApiKey, #saveDefaultPrompt, #apiKeyDialog, #apiKeyDialog input, #apiKeyDialog textarea, #apiKeyDialog button, #defaultPromptDialog,  #defaultPromptDialog input, #defaultPromptDialog textarea, #defaultPromptDialog button, #loadingOverlay"
 	)
 	elementsToStyle.forEach((element) => {
 		if (isDarkMode) {
