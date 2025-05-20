@@ -57,6 +57,10 @@
 	--neo-primary-transparent: var(--neo-dark-primary-transparent);
 }
 
+.dark-mode * {
+	color: white;
+}
+
 body {
 	background-color: var(--neo-primary);
 	color: var(--neo-secondary);
