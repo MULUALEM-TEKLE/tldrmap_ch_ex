@@ -303,8 +303,6 @@ function enableButtons(apiKey) {
 
 	const enableButton = (button, enabled) => {
 		button.disabled = !enabled
-		button.style.backgroundColor = enabled ? "white" : "lightgrey"
-		button.style.color = enabled ? "black" : "grey"
 	}
 
 	if (apiKey) {

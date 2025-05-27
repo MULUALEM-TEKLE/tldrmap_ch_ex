@@ -3,7 +3,7 @@
 	--border-thickness: 2px;
 	--shadow-offset: 5px;
 
-	/* Light Theme */
+	/* Light Theme Variables */
 	--neo-primary: #ffffff;
 	--neo-secondary: #000000;
 	--neo-accent: #00c853;
@@ -17,27 +17,15 @@
 	--markmap-a-color: var(--neo-accent);
 	--markmap-line-color: var(--neo-secondary);
 	--markmap-circle-open-bg: var(--neo-primary);
-	--markmap-circle-closed-bg: var(
-		--neo-secondary
-	); /* Example for closed state */
+	--markmap-circle-closed-bg: var(--neo-secondary);
 
 	/* Transparent backgrounds for overlays */
 	--neo-primary-transparent: rgba(255, 255, 255, 0.8);
-	--neo-dark-primary-transparent: rgba(
-		26,
-		26,
-		26,
-		0.8
-	); /* Corresponds to #1a1a1a */
+	--neo-dark-primary-transparent: rgba(26, 26, 26, 0.8);
 }
 
 .dark-mode {
-	background-color: var(--neo-dark-primary);
-	color: var(--neo-dark-secondary);
-	/* border-color: var(--neo-dark-secondary); Should be applied to specific elements, not body */
-	/* box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0 var(--neo-dark-shadow); Should be applied to specific elements */
-
-	/* Dark Theme */
+	/* Dark Theme Variables */
 	--neo-dark-primary: #1a1a1a;
 	--neo-dark-secondary: #ffffff;
 	--neo-dark-accent: #00c853;
@@ -57,8 +45,28 @@
 	--neo-primary-transparent: var(--neo-dark-primary-transparent);
 }
 
-.dark-mode * {
-	color: white;
+/* General Styles */
+* {
+	transition: color 0.3s ease, background-color 0.3s ease, border 0.3s ease;
+	font-family: monospace;
+	box-sizing: border-box;
+	border-radius: 5px;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	/* overflow: hidden; */
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+	display: none;
 }
 
 body {
@@ -66,21 +74,13 @@ body {
 	color: var(--neo-secondary);
 }
 
+.dark-mode * {
+	color: white;
+}
+
 .dark-mode body {
 	background-color: var(--neo-dark-primary);
 	color: var(--neo-dark-secondary);
-}
-
-#mindmap,
-#mindmapContainer {
-	background-color: var(
-		--neo-primary
-	); /* Or transparent if body bg should show */
-}
-
-.dark-mode #mindmap,
-.dark-mode #mindmapContainer {
-	background-color: var(--neo-dark-primary); /* Or transparent */
 }
 
 /* General link styling */
@@ -92,13 +92,34 @@ a {
 	color: var(--neo-dark-accent);
 }
 
-/* Styles for Markmap SVG elements */
-.markmap-node text {
-	fill: var(--markmap-text-color);
+textarea {
+	font-family: monospace;
 }
 
-.dark-mode .markmap-node text {
-	fill: var(--neo-dark-secondary);
+/* Markmap Specific Styles */
+#mindmap,
+#mindmapContainer {
+	background-color: var(--neo-primary);
+	width: 800px;
+	height: 600px;
+	min-width: 100%;
+	min-height: 100vh;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+#mindmap::-webkit-scrollbar,
+#mindmapContainer::-webkit-scrollbar {
+	display: none;
+}
+
+.dark-mode #mindmap,
+.dark-mode #mindmapContainer {
+	background-color: var(--neo-dark-primary);
+}
+
+.markmap-node text {
+	fill: var(--markmap-text-color);
 }
 
 .markmap-node a {
@@ -114,79 +135,56 @@ a {
 	fill: var(--markmap-circle-open-bg);
 }
 
+svg {
+	overflow: visible;
+}
+
+.markmap {
+	scrollbar-width: none;
+}
+
+.markmap::-webkit-scrollbar {
+	display: none;
+}
+
 .markmap-node[data-depth="0"] > circle {
-	stroke: var(--markmap-accent); /* Example: Highlight root node */
+	stroke: var(--markmap-accent);
 	fill: var(--markmap-accent);
 }
 
 .markmap-node:not(.markmap-expanded) > circle {
-	fill: var(--markmap-circle-closed-bg); /* Style for collapsed nodes */
-}
-
-/* No need for duplicated .dark-mode rules for markmap elements if variables are correctly updated by .dark-mode context */
-/* The variables --markmap-text-color etc. will change in .dark-mode context */
-
-* {
-	transition: color 0.3s ease, background-color 0.3s ease, border 0.3s ease;
-	font-family: monospace;
-	box-sizing: border-box;
-	border-radius: 5px;
-}
-
-textarea {
-	font-family: monospace;
-}
-
-body, #mindmapContainer /* Ensure #mindmapContainer is covered if it's the actual SVG parent */ {
-	margin: 0;
-	padding: 0;
-	/* background is handled by body and #mindmap rules now */
-	border: none;
-	box-shadow: none;
+	fill: var(--markmap-circle-closed-bg);
 }
 
 #toolbar {
 	background-color: transparent !important;
 }
 
-/* Styling for Markmap Toolbar SVG Icons */
 #toolbar button svg {
 	fill: var(--neo-secondary);
 }
 
 .dark-mode #toolbar button svg {
 	fill: var(--neo-dark-secondary);
+	stroke: var(--neo-dark-secondary);
 }
 
-/* body specific styles were moved up to ensure they are applied first */
-/* body {
-	margin: 0;
-	padding: 0;
-	background: black;
-	border: none;
-	box-shadow: none;
-	border-radius: 0;
-	height: 500px;
-	width: 700px;
-} */
-
-#generateButton,
-#downloadButton,
-#settingsButton,
-#saveApiKey,
-#clearApiKey,
-#cancelApiKey,
-#saveDefaultPrompt {
-	background-color: var(--neo-neutral);
+/* Button Styles */
+button {
+	background: transparent;
 	color: var(--neo-secondary);
-	color: var(--neo-secondary);
-	background: var(--neo-primary);
 	border: var(--border-thickness) solid var(--neo-border-light);
-	padding: 12px 24px;
+	padding: 8px;
 	cursor: pointer;
-	box-shadow: calc(var(--shadow-offset) / 2) calc(var(--shadow-offset) / 2) 0 0
-		var(--neo-shadow);
+	border-radius: 8px;
+	box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0 var(--neo-shadow);
 	transition: all 0.2s ease;
+}
+
+.dark-mode button {
+	background: transparent;
+	color: var(--neo-dark-secondary);
+	border-color: var(--neo-border-dark);
 }
 
 button:hover {
@@ -194,33 +192,45 @@ button:hover {
 	box-shadow: 2px 2px 0 0 var(--neo-secondary);
 }
 
-.dark-mode #generateButton,
-.dark-mode #downloadButton,
-.dark-mode #settingsButton,
-.dark-mode #saveApiKey,
-.dark-mode #clearApiKey,
-.dark-mode #saveDefaultPrompt {
-	background-color: var(--neo-dark-primary);
-	color: var(--neo-dark-secondary);
-	border: var(--border-thickness) solid var(--neo-border-dark);
+button img {
+	width: 20px;
+	height: 20px;
+	filter: none;
+	transition: filter 0.3s ease;
 }
 
-/* Ensure button text color contrasts with background in dark mode if not using variables directly */
-.dark-mode #generateButton,
-.dark-mode #downloadButton,
-.dark-mode #settingsButton,
-.dark-mode #saveApiKey,
-.dark-mode #clearApiKey,
-.dark-mode #saveDefaultPrompt {
-	color: var(
-		--neo-dark-secondary
-	); /* Ensure text is light on dark background */
+.dark-mode button img {
+	filter: invert(1);
 }
 
-#generateButton:disabled,
-#downloadButton:disabled,
-#apiKeyDialog button:disabled {
-	background-color: var(--neo-shadow);
+/* Action buttons */
+#generateButton,
+#downloadButton,
+#settingsButton,
+#saveApiKey,
+#clearApiKey,
+#saveDefaultPrompt {
+	padding: 8px;
+	width: 40px;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#generateButton img,
+#downloadButton img,
+#settingsButton img,
+#saveApiKey img,
+#clearApiKey img,
+#saveDefaultPrompt img {
+	width: 20px;
+	height: 20px;
+}
+
+/* Disabled button states */
+button:disabled {
+	background-color: transparent;
 	cursor: not-allowed;
 	color: var(--neo-secondary);
 	opacity: 0.5;
@@ -228,44 +238,16 @@ button:hover {
 	box-shadow: none;
 }
 
-#generateButton:disabled:hover,
-#downloadButton:disabled:hover,
-#apiKeyDialog button:disabled:hover {
+.dark-mode button:disabled {
+	background-color: transparent;
+	color: var(--neo-dark-secondary);
+}
+
+button:disabled:hover {
 	cursor: not-allowed;
+	transform: none;
+	box-shadow: none;
 }
-
-.support {
-	position: fixed;
-	top: 1%;
-	left: 1%;
-}
-
-#modeButton {
-	position: absolute;
-	top: 0.5rem;
-	right: 0.5rem;
-	padding: 0.5rem 1rem;
-	border-radius: 0.5rem;
-	border: none;
-	cursor: pointer;
-}
-
-:root {
-	--icon-color-light: black;
-	--icon-color-dark: goldenrod;
-}
-
-#modeButton img {
-	color: var(--icon-color-light); /* Black color in light mode */
-}
-
-.dark-mode #modeButton img {
-	color: var(--icon-color-dark); /* Golden color in dark mode */
-}
-
-/* .dark-mode * {
-	color: white;
-} */
 
 .buttons-container {
 	display: flex;
@@ -275,9 +257,29 @@ button:hover {
 	position: fixed;
 	bottom: 1%;
 	left: 1%;
-	/* margin: 5px; */
 }
 
+#modeButton {
+	position: fixed;
+	top: 1rem;
+	right: 1rem;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 8px;
+}
+
+#modeButton img {
+	width: 24px;
+	height: 24px;
+	filter: none;
+}
+
+.dark-mode #modeButton img {
+	filter: invert(1);
+}
+
+/* API Key Dialog Styles */
 #apiKeyDialog {
 	display: flex;
 	flex-direction: column;
@@ -297,6 +299,13 @@ button:hover {
 	border-radius: 12px;
 }
 
+.dark-mode #apiKeyDialog {
+	background: var(--neo-dark-primary);
+	border-color: var(--neo-dark-secondary);
+	box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0
+		var(--neo-dark-shadow);
+}
+
 #apiKeyDialog input,
 #apiKeyDialog textarea {
 	width: 100%;
@@ -309,11 +318,24 @@ button:hover {
 	transition: all 0.2s ease;
 }
 
+.dark-mode #apiKeyDialog input,
+.dark-mode #apiKeyDialog textarea {
+	background: var(--neo-dark-primary);
+	color: var(--neo-dark-secondary);
+	border-color: var(--neo-dark-secondary);
+}
+
 #apiKeyDialog input:focus,
 #apiKeyDialog textarea:focus {
 	outline: none;
 	box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0 var(--neo-shadow);
 	transform: translate(-2px, -2px);
+}
+
+.dark-mode #apiKeyDialog input:focus,
+.dark-mode #apiKeyDialog textarea:focus {
+	box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0
+		var(--neo-dark-shadow);
 }
 
 #apiKeyDialog button {
@@ -322,13 +344,51 @@ button:hover {
 	border: var(--border-thickness) solid var(--neo-secondary);
 	border-radius: 8px;
 	cursor: pointer;
-	background: var(--neo-primary);
+	background: transparent;
 	color: var(--neo-secondary);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	gap: 0.5rem;
 	transition: all 0.2s ease;
+}
+
+.dark-mode #apiKeyDialog button {
+	background: transparent;
+	color: var(--neo-dark-secondary);
+	border-color: var(--neo-dark-secondary);
+}
+
+#apiKeyDialog button:hover {
+	background: var(--neo-accent);
+	color: var(--neo-primary);
+	transform: translate(-2px, -2px);
+	box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0 var(--neo-shadow);
+}
+
+.dark-mode #apiKeyDialog button:hover {
+	background: var(--neo-dark-accent);
+	color: var(--neo-dark-primary);
+	box-shadow: var(--shadow-offset) var(--shadow-offset) 0 0
+		var(--neo-dark-shadow);
+}
+
+#apiKeyDialog button:disabled {
+	background-color: transparent;
+	cursor: not-allowed;
+	color: var(--neo-secondary);
+	opacity: 0.5;
+	transform: none;
+	box-shadow: none;
+}
+
+.dark-mode #apiKeyDialog button:disabled {
+	background-color: var(--neo-dark-shadow);
+	color: var(--neo-dark-secondary);
+}
+
+#apiKeyDialog button:disabled:hover {
+	cursor: not-allowed;
 }
 
 #apiKeyDialog .button-group {
@@ -338,37 +398,42 @@ button:hover {
 	margin-top: 1rem;
 }
 
-#apiKeyDialog .cancel-button {
-	padding: 0.5rem;
-	border: 1px solid red;
-	border-radius: 50%;
-	cursor: pointer;
-	position: absolute;
-	top: -1.5rem;
-	right: -1.5rem;
-	background: var(--neo-primary);
+#cancelApiKey {
+	padding: 8px;
+	width: 40px;
+	height: 40px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	border: var(--border-thickness) solid var(--neo-destructive);
+	position: absolute;
+	top: -3.5rem;
+	right: -3.5rem;
+	/* background: var(--neo-dark-destructive); */
 	transition: all 0.2s ease;
 }
 
-#apiKeyDialog .cancel-button:hover {
-	background: var(--neo-accent);
+#cancelApiKey img {
+	width: 20px;
+	height: 20px;
+}
+
+.dark-mode #cancelApiKey {
+	border-color: var(--neo-dark-destructive);
+	background: var(--neo-dark-destructive);
+}
+
+.dark-mode #cancelApiKey img {
+	filter: invert(1);
+}
+
+#cancelApiKey:hover {
+	background: var(--neo-destructive);
 	transform: rotate(90deg);
 }
 
-#apiKeyDialog button:disabled {
-	background-color: var(--neo-shadow);
-	cursor: not-allowed;
-	color: var(--neo-secondary);
-	opacity: 0.5;
-	transform: none;
-	box-shadow: none;
-}
-
-#apiKeyDialog button:disabled:hover {
-	cursor: not-allowed;
+.dark-mode #cancelApiKey:hover {
+	background: var(--neo-destructive);
 }
 
 #apiKeyDialog #apiKeyStatus,
@@ -378,76 +443,37 @@ button:hover {
 	color: var(--neo-accent);
 }
 
+.dark-mode #apiKeyDialog #apiKeyStatus,
+.dark-mode #apiKeyDialog #defaultPromptStatus {
+	color: var(--neo-dark-accent);
+}
+
 body.apiKeyDialogOpen {
 	overflow: hidden;
 }
 
-.dark-mode #apiKeyDialog {
-	background-color: var(--neo-dark-primary); /* Use variable */
-	color: var(--neo-dark-secondary); /* Use variable */
-	border: var(--border-thickness) solid var(--neo-dark-secondary); /* Add border for consistency */
-}
-
-.dark-mode #apiKeyDialog input,
-.dark-mode #apiKeyDialog textarea {
-	background-color: var(--neo-dark-primary);
-	color: var(--neo-dark-secondary);
-	border: var(--border-thickness) solid var(--neo-dark-secondary);
-}
-
-.dark-mode #apiKeyDialog button {
-	background-color: var(--neo-dark-primary); /* Dialog background */
-	color: var(--neo-dark-secondary); /* Dialog text color */
-	border: var(--border-thickness) solid var(--neo-dark-secondary); /* Dialog border color */
-}
-
-.dark-mode #apiKeyDialog button:hover {
-	background-color: var(--neo-dark-accent); /* Or a slightly different shade */
-	color: var(--neo-dark-primary); /* Text color on hover */
-}
-
-.dark-mode #apiKeyDialog .cancel-button {
-	background: var(--neo-dark-primary);
-	border: 1px solid var(--neo-dark-destructive); /* Use destructive color for cancel */
-}
-.dark-mode #apiKeyDialog .cancel-button:hover {
-	background: var(--neo-dark-destructive);
-	transform: rotate(90deg);
-}
-
-.dark-mode #apiKeyDialog #apiKeyStatus,
-.dark-mode #apiKeyDialog #defaultPromptStatus {
-	color: var(
-		--neo-dark-accent
-	); /* Ensure status text uses accent color in dark mode */
-}
-
-/* Removed .dark-mode #loadingIndicator as #loadingIndicator does not exist */
-
+/* Overlay Styles */
 #loadingOverlay {
 	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: var(
-		--neo-primary-transparent
-	); /* Use a variable for transparency */
+	background: var(--neo-primary-transparent);
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	z-index: 1000;
-	display: none; /* Initially hidden */
+	display: none;
 }
+
 .dark-mode #loadingOverlay {
-	background: var(
-		--neo-dark-primary-transparent
-	); /* Dark mode transparent background */
+	background: var(--neo-dark-primary-transparent);
 }
 
 #loadingOverlay .spinner {
-	border: 16px solid var(--neo-shadow); /* Use shadow or a light grey for spinner track */
-	border-top: 16px solid var(--neo-accent); /* Spinner progress color */
+	border: 16px solid var(--neo-shadow);
+	border-top: 16px solid var(--neo-accent);
 	border-radius: 50%;
 	width: 120px;
 	height: 120px;
@@ -473,4 +499,10 @@ body.apiKeyDialogOpen {
 	100% {
 		transform: scale(1);
 	}
+}
+
+.support {
+	position: fixed;
+	top: 1%;
+	left: 1%;
 }
