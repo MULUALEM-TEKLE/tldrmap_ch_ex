@@ -129,8 +129,10 @@ function decodeHTMLEntities(text) {
 		"&rdquo;": '"',
 	}
 
-	// Handle numeric entities
-	let result = text.replace(/&#(\d+);/g, (match, numStr) => {
+	let result = text
+
+	// Handle numeric entities first
+	result = result.replace(/&#(\d+);/g, (match, numStr) => {
 		const num = parseInt(numStr, 10)
 		return String.fromCharCode(num)
 	})
@@ -141,11 +143,10 @@ function decodeHTMLEntities(text) {
 		return String.fromCharCode(hex)
 	})
 
-	// Handle named entities
-	result = result.replace(/&([\w]+);/g, (match, entity) => {
-		const namedEntity = "&" + entity + ";"
-		return entities[namedEntity] || match
-	})
+	// Handle named entities - replace each entity directly
+	for (const [entity, replacement] of Object.entries(entities)) {
+		result = result.replace(new RegExp(entity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), replacement)
+	}
 
 	return result
 }

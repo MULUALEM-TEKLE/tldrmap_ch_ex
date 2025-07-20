@@ -255,20 +255,31 @@ function renderMindmap(markdown) {
 			svgEl.setAttribute("style", "width: 750px; height: 400px;") // Adjust size as needed
 			mindmapContainer.appendChild(svgEl)
 
-			// Decode HTML entities
-			markdown = markdown.replace(/&amp;/g, "&")
-			markdown = markdown.replace(/&lt;/g, "<")
-			markdown = markdown.replace(/&gt;/g, ">")
-			markdown = markdown.replace(/&quot;/g, '"')
-			markdown = markdown.replace(/&#39;/g, "'")
-			markdown = markdown.replace(/&apos;/g, "'")
-			markdown = markdown.replace(/&#x2F;/g, "/")
-			markdown = markdown.replace(/&#x60;/g, "`")
-			markdown = markdown.replace(/&#x3D;/g, "=")
-
-			// Transform Markdown to Markmap data
+			// Transform Markdown to Markmap data first
 			const transformer = new Transformer(builtInPlugins)
 			const { root, features } = transformer.transform(markdown)
+			
+			// Decode HTML entities in the transformed data
+			// The markmap library re-encodes some entities, so we need to decode them after transformation
+			function decodeEntitiesInNode(node) {
+				if (node.content) {
+					node.content = node.content
+						.replace(/&amp;/g, "&")
+						.replace(/&lt;/g, "<")
+						.replace(/&gt;/g, ">")
+						.replace(/&quot;/g, '"')
+						.replace(/&#39;/g, "'")
+						.replace(/&apos;/g, "'")
+						.replace(/&#x2F;/g, "/")
+						.replace(/&#x60;/g, "`")
+						.replace(/&#x3D;/g, "=")
+				}
+				if (node.children) {
+					node.children.forEach(decodeEntitiesInNode)
+				}
+			}
+			
+			decodeEntitiesInNode(root)
 			const assets = transformer.getUsedAssets(features)
 
 			if (log) console.log(Toolbar)
@@ -505,6 +516,10 @@ function handleGenerateButtonClick() {
 /**
  * Handles the download button click event.
  */
+function showImageDownloadedToast() {
+	showCustomToast("Image Downloaded and Copied to Clipboard", "#00dd00")
+}
+
 async function handleDownloadButtonClick() {
 	const mindmap = document.getElementById("mindmapContainer")
 	const backgroundColor = document.body.classList.contains("dark-mode")
@@ -526,6 +541,22 @@ async function handleDownloadButtonClick() {
 			},
 		})
 
+		// Copy to clipboard
+		try {
+			const response = await fetch(dataUrl)
+			const blob = await response.blob()
+			await navigator.clipboard.write([
+				new ClipboardItem({
+					[blob.type]: blob,
+				}),
+			])
+		} catch (clipboardError) {
+			console.error("Error copying to clipboard:", clipboardError)
+			showCustomToast("Image Downloaded (Clipboard Copy Failed)", "#dd7700")
+			return
+		}
+
+		// Download image
 		const link = document.createElement("a")
 		link.download = `${title}.png`
 		link.href = dataUrl
