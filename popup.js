@@ -258,7 +258,7 @@ function renderMindmap(markdown) {
 			// Transform Markdown to Markmap data first
 			const transformer = new Transformer(builtInPlugins)
 			const { root, features } = transformer.transform(markdown)
-			
+
 			// Decode HTML entities in the transformed data
 			// The markmap library re-encodes some entities, so we need to decode them after transformation
 			function decodeEntitiesInNode(node) {
@@ -278,7 +278,7 @@ function renderMindmap(markdown) {
 					node.children.forEach(decodeEntitiesInNode)
 				}
 			}
-			
+
 			decodeEntitiesInNode(root)
 			const assets = transformer.getUsedAssets(features)
 
@@ -517,7 +517,10 @@ function handleGenerateButtonClick() {
  * Handles the download button click event.
  */
 function showImageDownloadedToast() {
-	showCustomToast("Image Downloaded and Copied to Clipboard", "#00dd00")
+	showCustomToast(
+		"Image Downloaded and Copied to Clipboard with Promotional Text",
+		"#00dd00"
+	)
 }
 
 async function handleDownloadButtonClick() {
@@ -541,13 +544,18 @@ async function handleDownloadButtonClick() {
 			},
 		})
 
-		// Copy to clipboard
+		// Copy to clipboard with both image and text
 		try {
 			const response = await fetch(dataUrl)
 			const blob = await response.blob()
+			const promotionalText =
+				// "create free mind-maps at : https://tldrmap.vercel.app/ \nsupport the project at : https://ko-fi.com/xarbuildthings"
+				"https://x.com/XAFODIAN/status/1954890992953544947"
+
 			await navigator.clipboard.write([
 				new ClipboardItem({
 					[blob.type]: blob,
+					"text/plain": new Blob([promotionalText], { type: "text/plain" }),
 				}),
 			])
 		} catch (clipboardError) {

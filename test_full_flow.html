@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Test HTML Entity Decoding in Full Flow</title>
-    <script src="libs/d3.js"></script>
-    <script src="libs/mark-map-lib.js"></script>
-    <script src="libs/mark-map-view.js"></script>
-    <script src="libs/mark-map-toolbar.js"></script>
-</head>
-<body>
-    <div id="mindmap" style="width: 800px; height: 600px;"></div>
-    
-    <script>
-        const { Transformer, builtInPlugins } = window.markmap
-        const { loadCSS, loadJS, Markmap, Toolbar } = window.markmap
-        
-        // Test markdown with HTML entities (simulating what might come from API)
-        const testMarkdown = `# Test &quot;Entities&quot; &amp; More
+	<head>
+		<title>Test HTML Entity Decoding in Full Flow</title>
+		<script src="libs/d3.js"></script>
+		<script src="libs/mark-map-lib.js"></script>
+		<script src="libs/mark-map-view.js"></script>
+		<script src="libs/mark-map-toolbar.js"></script>
+	</head>
+	<body>
+		<div id="mindmap" style="width: 800px; height: 600px"></div>
+
+		<script>
+			const { Transformer, builtInPlugins } = window.markmap
+			const { loadCSS, loadJS, Markmap, Toolbar } = window.markmap
+
+			// Test markdown with HTML entities (simulating what might come from API)
+			const testMarkdown = `# Test &quot;Entities&quot; &amp; More
 
 ## Section with &lt;HTML&gt; entities
 - Item with &quot;quotes&quot;
@@ -26,72 +26,75 @@
 - Normal text
 - Text with &#39;apostrophe&#39;
 - Text with &apos;another apostrophe&apos;`
-        
-        const options = {
-            duration: 500,
-            maxWidth: 400,
-            initialExpandLevel: -2,
-            zoom: true,
-            pan: true,
-            spacingHorizontal: 80,
-            spacingVertical: 20,
-            fitRatio: 0.8,
-            maxInitialScale: 1.125,
-            nodeMinHeight: 16,
-            paddingX: 5,
-            paddingY: 5
-        }
-        
-        function renderTestMindmap(markdown) {
-            const mindmapContainer = document.getElementById("mindmap")
-            mindmapContainer.innerHTML = ""
-            
-            // Create SVG element
-            const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-            svgEl.setAttribute("id", "mindmapContainer")
-            svgEl.setAttribute("style", "width: 800px; height: 600px;")
-            mindmapContainer.appendChild(svgEl)
-            
-            // Transform Markdown to Markmap data first
-            const transformer = new Transformer(builtInPlugins)
-            const { root, features } = transformer.transform(markdown)
-            
-            console.log("Before decoding:", JSON.stringify(root, null, 2))
-            
-            // Decode HTML entities in the transformed data
-            function decodeEntitiesInNode(node) {
-                if (node.content) {
-                    node.content = node.content
-                        .replace(/&amp;/g, "&")
-                        .replace(/&lt;/g, "<")
-                        .replace(/&gt;/g, ">")
-                        .replace(/&quot;/g, '"')
-                        .replace(/&#39;/g, "'")
-                        .replace(/&apos;/g, "'")
-                        .replace(/&#x2F;/g, "/")
-                        .replace(/&#x60;/g, "`")
-                        .replace(/&#x3D;/g, "=")
-                }
-                if (node.children) {
-                    node.children.forEach(decodeEntitiesInNode)
-                }
-            }
-            
-            decodeEntitiesInNode(root)
-            
-            console.log("After decoding:", JSON.stringify(root, null, 2))
-            
-            const assets = transformer.getUsedAssets(features)
-            
-            // Create markmap
-            let mm = Markmap.create(svgEl, options, root)
-        }
-        
-        // Run the test when page loads
-        window.addEventListener('load', () => {
-            console.log("Testing HTML entity decoding in full flow...")
-            renderTestMindmap(testMarkdown)
-        })
-    </script>
-</body>
+
+			const options = {
+				duration: 500,
+				maxWidth: 400,
+				initialExpandLevel: -2,
+				zoom: true,
+				pan: true,
+				spacingHorizontal: 80,
+				spacingVertical: 20,
+				fitRatio: 0.8,
+				maxInitialScale: 1.125,
+				nodeMinHeight: 16,
+				paddingX: 5,
+				paddingY: 5,
+			}
+
+			function renderTestMindmap(markdown) {
+				const mindmapContainer = document.getElementById("mindmap")
+				mindmapContainer.innerHTML = ""
+
+				// Create SVG element
+				const svgEl = document.createElementNS(
+					"http://www.w3.org/2000/svg",
+					"svg"
+				)
+				svgEl.setAttribute("id", "mindmapContainer")
+				svgEl.setAttribute("style", "width: 800px; height: 600px;")
+				mindmapContainer.appendChild(svgEl)
+
+				// Transform Markdown to Markmap data first
+				const transformer = new Transformer(builtInPlugins)
+				const { root, features } = transformer.transform(markdown)
+
+				console.log("Before decoding:", JSON.stringify(root, null, 2))
+
+				// Decode HTML entities in the transformed data
+				function decodeEntitiesInNode(node) {
+					if (node.content) {
+						node.content = node.content
+							.replace(/&amp;/g, "&")
+							.replace(/&lt;/g, "<")
+							.replace(/&gt;/g, ">")
+							.replace(/&quot;/g, '"')
+							.replace(/&#39;/g, "'")
+							.replace(/&apos;/g, "'")
+							.replace(/&#x2F;/g, "/")
+							.replace(/&#x60;/g, "`")
+							.replace(/&#x3D;/g, "=")
+					}
+					if (node.children) {
+						node.children.forEach(decodeEntitiesInNode)
+					}
+				}
+
+				decodeEntitiesInNode(root)
+
+				console.log("After decoding:", JSON.stringify(root, null, 2))
+
+				const assets = transformer.getUsedAssets(features)
+
+				// Create markmap
+				let mm = Markmap.create(svgEl, options, root)
+			}
+
+			// Run the test when page loads
+			window.addEventListener("load", () => {
+				console.log("Testing HTML entity decoding in full flow...")
+				renderTestMindmap(testMarkdown)
+			})
+		</script>
+	</body>
 </html>
