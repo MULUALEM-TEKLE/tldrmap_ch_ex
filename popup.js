@@ -550,7 +550,8 @@ async function handleDownloadButtonClick() {
 			const blob = await response.blob()
 			const promotionalText =
 				// "create free mind-maps at : https://tldrmap.vercel.app/ \nsupport the project at : https://ko-fi.com/xarbuildthings"
-				"https://x.com/XAFODIAN/status/1954890992953544947"
+				// "https://x.com/XAFODIAN/status/1954890992953544947"
+				"mindmapping tool => pinned post "
 
 			await navigator.clipboard.write([
 				new ClipboardItem({
